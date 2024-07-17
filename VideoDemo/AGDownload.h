@@ -10,16 +10,17 @@
  下载类弱持有播放类，将下载情况传递给播放类
  
  */
+
 #import <Foundation/Foundation.h>
 #import "AGDownloadDelegate.h"
 #import "AGDataTool.h"
 
 typedef NS_ENUM(NSInteger,AGDownloadStatus) {
     AGDownloadStatusUnkown,
-    AGDownloadStatusSuccess,
-    AGDownloadStatusCancel,
-    AGDownloadStatusFailure,
-    AGDownloadStatusStoreFailure,
+    AGDownloadStatusSuccess,// 成功
+    AGDownloadStatusCancel,// 取消
+    AGDownloadStatusFailure,// 失败
+    AGDownloadStatusStoreFailure,// 存放失败
 };
 
 @interface AGDownload : NSObject
@@ -27,7 +28,6 @@ typedef NS_ENUM(NSInteger,AGDownloadStatus) {
 @property (nonatomic,strong)NSURL *resourceUrl;// 资源地址
 @property (nonatomic,weak)id<AGDownloadDelegate> delegate;// 播放类
 @property (nonatomic,copy)void(^downloadBlock)(AGDownload *download,NSError *error);// 下载管理类
-
 
 - (void)startDownload;
 

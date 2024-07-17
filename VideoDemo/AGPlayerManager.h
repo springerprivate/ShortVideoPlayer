@@ -17,11 +17,19 @@
 /// - Parameter resourceUrl: 资源地址
 - (AGPlayer *)playerWithResourceUrl:(NSURL *)resourceUrl errorBlock:(void(^)(NSError *))errorBlock;
 
-// 播放控制
-- (BOOL)playerPlayWithPlayer:(AGPlayer *)player errorBlock:(void(^)(NSError *))errorBlock;
-- (BOOL)playerPauseWithPlayer:(AGPlayer *)player errorBlock:(void(^)(NSError *))errorBlock;
-- (BOOL)playerReplayWithPlayer:(AGPlayer *)player errorBlock:(void(^)(NSError *))errorBlock;
+/// 开始播放
+/// - Parameter player: 播放器
+- (BOOL)playerPlayWithPlayer:(AGPlayer *)player;
 
+/// 暂停播放
+/// - Parameter player: 播放器
+- (BOOL)playerPauseWithPlayer:(AGPlayer *)player;
+
+/// 重新播放
+/// - Parameter player: 播放器
+- (BOOL)playerReplayWithPlayer:(AGPlayer *)player;
+
+/// 暂停所有
 - (void)pauseAll;
 
 @end

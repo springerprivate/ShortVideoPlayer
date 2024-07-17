@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		944824572C461E6F001561CD /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 944824562C461E6F001561CD /* AppDelegate.m */; };
 		9448245A2C461E6F001561CD /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 944824592C461E6F001561CD /* SceneDelegate.m */; };
-		9448245D2C461E6F001561CD /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9448245C2C461E6F001561CD /* ViewController.m */; };
-		944824602C461E6F001561CD /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 9448245F2C461E6F001561CD /* Base */; };
 		944824622C461E70001561CD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 944824612C461E70001561CD /* Assets.xcassets */; };
 		944824652C461E70001561CD /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 944824642C461E70001561CD /* Base */; };
 		944824682C461E70001561CD /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 944824672C461E70001561CD /* main.m */; };
@@ -21,6 +19,8 @@
 		9448247E2C465906001561CD /* AGDownload.m in Sources */ = {isa = PBXBuildFile; fileRef = 9448247D2C465906001561CD /* AGDownload.m */; };
 		944824822C46769E001561CD /* AGVideoResourceCacheManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 944824812C46769E001561CD /* AGVideoResourceCacheManager.m */; };
 		944824852C4690D3001561CD /* AGDataTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 944824842C4690D3001561CD /* AGDataTool.m */; };
+		94709AC02C47646700C264DB /* RRVideoCommendViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 94709ABE2C47646700C264DB /* RRVideoCommendViewController.m */; };
+		94709AC32C47682D00C264DB /* MyCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 94709AC22C47682D00C264DB /* MyCell.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,9 +29,6 @@
 		944824562C461E6F001561CD /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		944824582C461E6F001561CD /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
 		944824592C461E6F001561CD /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
-		9448245B2C461E6F001561CD /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		9448245C2C461E6F001561CD /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
-		9448245F2C461E6F001561CD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		944824612C461E70001561CD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		944824642C461E70001561CD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		944824662C461E70001561CD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -50,6 +47,10 @@
 		944824812C46769E001561CD /* AGVideoResourceCacheManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AGVideoResourceCacheManager.m; sourceTree = "<group>"; };
 		944824832C4690D3001561CD /* AGDataTool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AGDataTool.h; sourceTree = "<group>"; };
 		944824842C4690D3001561CD /* AGDataTool.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AGDataTool.m; sourceTree = "<group>"; };
+		94709ABE2C47646700C264DB /* RRVideoCommendViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RRVideoCommendViewController.m; sourceTree = "<group>"; };
+		94709ABF2C47646700C264DB /* RRVideoCommendViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RRVideoCommendViewController.h; sourceTree = "<group>"; };
+		94709AC12C47682D00C264DB /* MyCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MyCell.h; sourceTree = "<group>"; };
+		94709AC22C47682D00C264DB /* MyCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MyCell.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,8 +88,10 @@
 				944824562C461E6F001561CD /* AppDelegate.m */,
 				944824582C461E6F001561CD /* SceneDelegate.h */,
 				944824592C461E6F001561CD /* SceneDelegate.m */,
-				9448245B2C461E6F001561CD /* ViewController.h */,
-				9448245C2C461E6F001561CD /* ViewController.m */,
+				94709ABF2C47646700C264DB /* RRVideoCommendViewController.h */,
+				94709ABE2C47646700C264DB /* RRVideoCommendViewController.m */,
+				94709AC12C47682D00C264DB /* MyCell.h */,
+				94709AC22C47682D00C264DB /* MyCell.m */,
 				944824732C4658D0001561CD /* AGPlayerManager.h */,
 				944824742C4658D0001561CD /* AGPlayerManager.m */,
 				944824762C4658E5001561CD /* AGPlayer.h */,
@@ -102,7 +105,6 @@
 				944824812C46769E001561CD /* AGVideoResourceCacheManager.m */,
 				944824832C4690D3001561CD /* AGDataTool.h */,
 				944824842C4690D3001561CD /* AGDataTool.m */,
-				9448245E2C461E6F001561CD /* Main.storyboard */,
 				944824612C461E70001561CD /* Assets.xcassets */,
 				944824632C461E70001561CD /* LaunchScreen.storyboard */,
 				944824662C461E70001561CD /* Info.plist */,
@@ -171,7 +173,6 @@
 				944824622C461E70001561CD /* Assets.xcassets in Resources */,
 				944824652C461E70001561CD /* Base in Resources */,
 				944824722C464E84001561CD /* videoplayback.mp4 in Resources */,
-				944824602C461E6F001561CD /* Base in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -184,28 +185,21 @@
 			files = (
 				944824782C4658E5001561CD /* AGPlayer.m in Sources */,
 				944824822C46769E001561CD /* AGVideoResourceCacheManager.m in Sources */,
-				9448245D2C461E6F001561CD /* ViewController.m in Sources */,
 				944824752C4658D0001561CD /* AGPlayerManager.m in Sources */,
 				944824572C461E6F001561CD /* AppDelegate.m in Sources */,
+				94709AC32C47682D00C264DB /* MyCell.m in Sources */,
 				944824682C461E70001561CD /* main.m in Sources */,
 				9448245A2C461E6F001561CD /* SceneDelegate.m in Sources */,
 				9448247B2C4658FC001561CD /* AGDownloadManager.m in Sources */,
 				9448247E2C465906001561CD /* AGDownload.m in Sources */,
 				944824852C4690D3001561CD /* AGDataTool.m in Sources */,
+				94709AC02C47646700C264DB /* RRVideoCommendViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		9448245E2C461E6F001561CD /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				9448245F2C461E6F001561CD /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		944824632C461E70001561CD /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -345,7 +339,7 @@
 				INFOPLIST_FILE = VideoDemo/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIMainStoryboardFile = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -373,7 +367,7 @@
 				INFOPLIST_FILE = VideoDemo/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIMainStoryboardFile = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;

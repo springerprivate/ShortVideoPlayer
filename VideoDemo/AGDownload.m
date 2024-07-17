@@ -28,6 +28,7 @@
     // 若资源存在，直接返回成功
     NSURL *localUrl = [AGVideoResourceCacheManager getLocalResoureWithCacheKey:[AGVideoResourceCacheManager cacheKeyWithResourceUrl:self.resourceUrl]];
     if (localUrl) {
+        NSLog(@"不用下载  %@",self.resourceUrl.absoluteString);
         if (self.delegate) {
             [self.delegate downloadSuccess:localUrl];
         }
@@ -36,6 +37,7 @@
         }
         return;
     }
+    NSLog(@"开始下载  %@",self.resourceUrl.absoluteString);
     NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
     self.session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
     self.downloadTask = [self.session downloadTaskWithURL:self.resourceUrl];
@@ -49,6 +51,7 @@
 #pragma mark -NSURLSessionDownloadDelegate
 // 下载完成时调用
 - (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(NSURL *)location {
+    NSLog(@"下载完成");
     NSString *documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
     NSString *path = [documentsPath stringByAppendingPathComponent:@"video"];
     if (![AGDataTool createFolder:path]) {
@@ -75,6 +78,7 @@
             self.downloadBlock(self,error);
         }
     } else {
+        NSLog(@"存储成功  %@",destinationPath);
         if (self.delegate) {
             [self.delegate downloadSuccess:[NSURL fileURLWithPath:destinationPath]];
         }
@@ -106,7 +110,7 @@
 }
 - (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didWriteData:(int64_t)bytesWritten totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite {
     CGFloat progress = (CGFloat)totalBytesWritten / (CGFloat)totalBytesExpectedToWrite;
-    NSLog(@"下载进度: %.2f%%", progress * 100);
+    NSLog(@"%@ 下载进度: %.2f%%",self, progress * 100);
 }
 #pragma mark -dealloc
 - (void)dealloc{
