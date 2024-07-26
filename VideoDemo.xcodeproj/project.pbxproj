@@ -12,7 +12,6 @@
 		944824622C461E70001561CD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 944824612C461E70001561CD /* Assets.xcassets */; };
 		944824652C461E70001561CD /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 944824642C461E70001561CD /* Base */; };
 		944824682C461E70001561CD /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 944824672C461E70001561CD /* main.m */; };
-		944824722C464E84001561CD /* videoplayback.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 944824712C464CEE001561CD /* videoplayback.mp4 */; };
 		944824752C4658D0001561CD /* AGPlayerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 944824742C4658D0001561CD /* AGPlayerManager.m */; };
 		944824782C4658E5001561CD /* AGPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 944824772C4658E5001561CD /* AGPlayer.m */; };
 		9448247B2C4658FC001561CD /* AGDownloadManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 9448247A2C4658FC001561CD /* AGDownloadManager.m */; };
@@ -33,7 +32,6 @@
 		944824642C461E70001561CD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		944824662C461E70001561CD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		944824672C461E70001561CD /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		944824712C464CEE001561CD /* videoplayback.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = videoplayback.mp4; sourceTree = "<group>"; };
 		944824732C4658D0001561CD /* AGPlayerManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AGPlayerManager.h; sourceTree = "<group>"; };
 		944824742C4658D0001561CD /* AGPlayerManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AGPlayerManager.m; sourceTree = "<group>"; };
 		944824762C4658E5001561CD /* AGPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AGPlayer.h; sourceTree = "<group>"; };
@@ -83,7 +81,6 @@
 		944824542C461E6F001561CD /* VideoDemo */ = {
 			isa = PBXGroup;
 			children = (
-				944824712C464CEE001561CD /* videoplayback.mp4 */,
 				944824552C461E6F001561CD /* AppDelegate.h */,
 				944824562C461E6F001561CD /* AppDelegate.m */,
 				944824582C461E6F001561CD /* SceneDelegate.h */,
@@ -172,7 +169,6 @@
 			files = (
 				944824622C461E70001561CD /* Assets.xcassets in Resources */,
 				944824652C461E70001561CD /* Base in Resources */,
-				944824722C464E84001561CD /* videoplayback.mp4 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

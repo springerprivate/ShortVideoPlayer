@@ -13,24 +13,19 @@
 /// 单例
 + (instancetype)shareManager;
 
-/// 获取播放类  对url做简单校验
-/// - Parameter resourceUrl: 资源地址
+/// 获取播放类
+/// - Parameter resourceUrl: 资源地址（唯一标识）
 - (AGPlayer *)playerWithResourceUrl:(NSURL *)resourceUrl errorBlock:(void(^)(NSError *))errorBlock;
 
 /// 开始播放
-/// - Parameter player: 播放器
-- (BOOL)playerPlayWithPlayer:(AGPlayer *)player;
+/// - Parameter player: 播放器 可为nil
+- (void)playerPlayWithPlayer:(AGPlayer *)player;
 
 /// 暂停播放
-/// - Parameter player: 播放器
-- (BOOL)playerPauseWithPlayer:(AGPlayer *)player;
+- (void)playerPause;
 
-/// 重新播放
-/// - Parameter player: 播放器
-- (BOOL)playerReplayWithPlayer:(AGPlayer *)player;
-
-/// 暂停所有
-- (void)pauseAll;
+/// 结束播放
+- (void)playerEndplay;
 
 @end
 

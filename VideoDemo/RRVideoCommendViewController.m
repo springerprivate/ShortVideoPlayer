@@ -60,12 +60,19 @@
 }
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     NSString *str = self.list[indexPath.row];
+    NSLog(@"player --- %@ %@",NSStringFromSelector(_cmd),str);
     //填充视频数据
     MyCell *cell = [tableView dequeueReusableCellWithIdentifier:NSStringFromClass([MyCell class]) forIndexPath:indexPath];
     cell.contentView.layer.borderWidth = 4;
     cell.contentView.layer.borderColor = [UIColor redColor].CGColor;
-    cell.player = [[AGPlayerManager shareManager] playerWithResourceUrl:[NSURL URLWithString:str] errorBlock:nil];
-    [[AGDownloadManager shareManager] downloadWithResourceUrl:[NSURL URLWithString:str] player:cell.player];
+    cell.indexPath = indexPath;
+    AGPlayer *player = [[AGPlayerManager shareManager] playerWithResourceUrl:[NSURL URLWithString:str] errorBlock:nil];
+    if (player) {
+        cell.player = player;
+        [[AGDownloadManager shareManager] downloadWithResourceUrl:[NSURL URLWithString:str] player:(id <AGDownloadDelegate>)player];
+    }else{
+        cell.statusLab.text = @"文件下载地址格式有问题";
+    }
     return cell;
 }
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
@@ -86,7 +93,15 @@
         return;
     }
     _currentIndex = indexPath;
+    NSLog(@"----------------------------------------");
     [[AGPlayerManager shareManager] playerPlayWithPlayer:((MyCell *)cell).player];
+    
+    for (int index = 1; index < 3; index ++) {
+        if ([self.list count] > (index + indexPath.row)) {
+            NSString *str = self.list[indexPath.row + index];
+            [[AGDownloadManager shareManager] downloadWithResourceUrl:[NSURL URLWithString:str] player:nil];
+        }
+    }
 }
 #pragma mark -lazyLoad
 - (NSMutableArray<NSString *> *)list{

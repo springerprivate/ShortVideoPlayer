@@ -10,6 +10,7 @@
 
 @interface AGPlayerManager (){
     AGPlayer *_currentPlayPlayer;//当前播放类
+    dispatch_queue_t _serialQueue;
 }
 
 @property (nonatomic,strong)NSMutableArray <AGPlayer *>* playerMuArr;// 持有播放类，做数量限制 时间越近，坐标越靠前
@@ -23,15 +24,45 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         playerManager = [[self alloc] init];
+        playerManager->_serialQueue = dispatch_queue_create("com.renrui.playerManager.serialQueue", DISPATCH_QUEUE_SERIAL);
     });
     return playerManager;
 }
-
+#pragma mark -public
+- (void)playerPlayWithPlayer:(AGPlayer *)player
+{
+    NSLog(@"player --- %@ %@",NSStringFromSelector(_cmd),player.resourceUrl.absoluteString);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (self->_currentPlayPlayer && self->_currentPlayPlayer != player) {
+            NSLog(@"player --- %@ %@ ---- ",NSStringFromSelector(_cmd),self->_currentPlayPlayer.resourceUrl.absoluteString);
+            [self->_currentPlayPlayer endPlay];
+        }
+        self->_currentPlayPlayer = player;
+        NSLog(@"player --- %@ %@ ----",NSStringFromSelector(_cmd),player.resourceUrl.absoluteString);
+        [self->_currentPlayPlayer play];
+    });
+}
+- (void)playerPause
+{
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (self->_currentPlayPlayer) {
+            NSLog(@"player --- %@ %@",NSStringFromSelector(_cmd),self->_currentPlayPlayer.resourceUrl.absoluteString);
+            [self->_currentPlayPlayer pause];
+        }
+    });
+}
+- (void)playerEndplay
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (self->_currentPlayPlayer) {
+            NSLog(@"player --- %@ %@",NSStringFromSelector(_cmd),self->_currentPlayPlayer.resourceUrl.absoluteString);
+            [self->_currentPlayPlayer endPlay];
+        }
+    });
+}
 - (AGPlayer *)playerWithResourceUrl:(NSURL *)resourceUrl errorBlock:(void (^)(NSError *))errorBlock{
     if (!(resourceUrl && resourceUrl.scheme)) {// 无效
-        if (errorBlock) {
-            errorBlock([NSError errorWithDomain:@"" code:-100 userInfo:@{NSLocalizedDescriptionKey:@"获取播放器失败",NSLocalizedFailureReasonErrorKey:@"url 无效"}]);
-        }
         return nil;
     }
     for (AGPlayer *player in self.playerMuArr) {
@@ -45,67 +76,19 @@
     }
     return [self createNewPlayerWithResourceUrl:resourceUrl];
 }
-
-- (BOOL)playerPlayWithPlayer:(AGPlayer *)player{
-    if (_currentPlayPlayer) {
-        if (_currentPlayPlayer == player) {
-            [_currentPlayPlayer play];
-            return YES;
-        }else{
-            [_currentPlayPlayer pause];
-        }
-    }
-    for (AGPlayer *tmpPlayer in self.playerMuArr) {
-        if (tmpPlayer == player) {
-            [player play];
-            _currentPlayPlayer = player;
-            return YES;
-        }
-    }
-    return NO;
-}
-- (BOOL)playerPauseWithPlayer:(AGPlayer *)player{
-    if (_currentPlayPlayer && _currentPlayPlayer == player) {
-        [_currentPlayPlayer pause];
-        return YES;
-    }
-    for (AGPlayer *tmpPlayer in self.playerMuArr) {
-        if (tmpPlayer == player) {
-            [player pause];
-            _currentPlayPlayer = nil;
-            return YES;
-        }
-    }
-    return NO;
-}
-- (BOOL)playerReplayWithPlayer:(AGPlayer *)player{
-    if (_currentPlayPlayer) {
-        if (_currentPlayPlayer == player) {
-            [_currentPlayPlayer replay];
-            return YES;
-        }else{
-            [_currentPlayPlayer pause];
-        }
-    }
-    for (AGPlayer *tmpPlayer in self.playerMuArr) {
-        if (tmpPlayer == player) {
-            [player replay];
-            _currentPlayPlayer = player;
-            return YES;
-        }
-    }
-    return NO;
-}
-- (void)pauseAll{
-    for (AGPlayer *player in self.playerMuArr) {
-        [player pause];
-    }
-    _currentPlayPlayer = nil;
-}
-
 - (AGPlayer *)createNewPlayerWithResourceUrl:(NSURL *)resouceUrl{
     AGPlayer *player = [AGPlayer new];
     player.resourceUrl = resouceUrl;
+    __weak typeof(self) weakSelf = self;
+    player.onPlayEndResetBlock = ^(AGPlayer *player) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        [strongSelf playerPlayWithPlayer:player];
+    };
+    player.onReadyBlock = ^(AGPlayer *player) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        NSLog(@"player ---- playwithplayer -----");
+        [strongSelf playerPlayWithPlayer:player];
+    };
     [self.playerMuArr insertObject:player atIndex:0];
     // 长度限制
     while ([self.playerMuArr count] >= 10) {
