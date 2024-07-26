@@ -6,7 +6,6 @@
 //
 
 #import "AGPlayerManager.h"
-#import "AGPlayer.h"
 
 @interface AGPlayerManager (){
     AGPlayer *_currentPlayPlayer;//当前播放类
@@ -62,6 +61,16 @@
         }
     });
 }
+- (void)playerReadyToPlay:(AGPlayer *)player{
+    dispatch_async(_serialQueue, ^{
+        if (nil == self->_currentPlayPlayer) {
+            self->_currentPlayPlayer = player;
+        }
+        if (self->_currentPlayPlayer && self->_currentPlayPlayer == player) {
+            [self->_currentPlayPlayer play];
+        }
+    });
+}
 - (AGPlayer *)playerWithResourceUrl:(NSURL *)resourceUrl errorBlock:(void (^)(NSError *))errorBlock{
     if (!(resourceUrl && resourceUrl.scheme)) {// 无效
         return nil;
@@ -83,11 +92,13 @@
     __weak typeof(self) weakSelf = self;
     player.onPlayEndResetBlock = ^(AGPlayer *player) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        [strongSelf playerPlayWithPlayer:player];
+        NSLog(@"player playermanager onPlayEndResetBlock --- %@ %@",NSStringFromSelector(_cmd),self->_currentPlayPlayer.resourceUrl.absoluteString);
+        [strongSelf playerReadyToPlay:player];
     };
     player.onReadyBlock = ^(AGPlayer *player) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        [strongSelf playerPlayWithPlayer:player];
+        NSLog(@"player playermanager onReadyBlock --- %@ %@",NSStringFromSelector(_cmd),self->_currentPlayPlayer.resourceUrl.absoluteString);
+        [strongSelf playerReadyToPlay:player];
     };
     [self.playerMuArr insertObject:player atIndex:0];
     // 长度限制

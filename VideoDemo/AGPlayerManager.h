@@ -6,8 +6,8 @@
 //
 // 播放器管理类 持有 分配 管理 播放类 AGPlayer  播放、暂停、移除
 #import <Foundation/Foundation.h>
+#import "AGPlayer.h"
 
-@class AGPlayer;
 @interface AGPlayerManager : NSObject
 
 /// 单例

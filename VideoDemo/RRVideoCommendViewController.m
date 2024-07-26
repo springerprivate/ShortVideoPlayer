@@ -94,6 +94,14 @@
     }
     _currentIndex = indexPath;
     NSLog(@"----------------------------------------");
+    
+    // 如果文件下载失败，则重新下载
+    AGPlayer *player = ((MyCell *)cell).player;
+    
+    if ([player resouceDownloadFailure]) {
+        [[AGDownloadManager shareManager] downloadWithResourceUrl:player.resourceUrl player:player];
+    }
+    
     [[AGPlayerManager shareManager] playerPlayWithPlayer:((MyCell *)cell).player];
     
     for (int index = 1; index < 3; index ++) {

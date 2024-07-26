@@ -54,6 +54,8 @@
                 self.onPlayerStatusBlock(AGPlayerStatusPlay);
             }
         });
+    }else{
+        
     }
 }
 - (void)pause
@@ -87,6 +89,9 @@
             }
         });
     }
+}
+- (BOOL)resouceDownloadFailure{
+    return AGPlayerStatusFailure == self.playerStatus;
 }
 #pragma mark -AGDownloadDelegate
 - (void)agDownloadStatus:(AGDownloadStatus)downloadStatus localUrl:(NSURL *)localUrl error:(NSError *)error downloadBytes:(int64_t)downloadBytes totalBytes:(int64_t)totalBytes
