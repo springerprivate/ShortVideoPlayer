@@ -32,25 +32,6 @@
     }
     return self;
 }
-//- (void)setLayerView:(UIView *)layerView
-//{
-//    NSLog(@"player --- %@ %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString,[NSThread currentThread]);
-//    if (self->_layerView) {
-//        [self->_layerView.layer removeAllAnimations];
-//        for (CALayer *layer in [self->_layerView.layer sublayers]) {
-//            [layer removeFromSuperlayer];
-//        }
-//    }
-//    self->_layerView = layerView;
-//    if (self.playerLayer) {
-//        self.playerLayer.frame = _layerView.layer.frame;
-//        [self.layerView.layer removeAllAnimations];
-//        for (CALayer *layer in [self->_layerView.layer sublayers]) {
-//            [layer removeFromSuperlayer];
-//        }
-//        [self->_layerView.layer addSublayer:self.playerLayer];
-//    }
-//}
 - (void)setOnPlayerStatusBlock:(void (^)(AGPlayerStatus))onPlayerStatusBlock{
     _onPlayerStatusBlock = onPlayerStatusBlock;
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -63,7 +44,6 @@
 -(void)play
 {
     NSLog(@"player --- %@ %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString,[NSThread currentThread]);
-    NSLog(@"---------------play %@ ",self.resourceUrl.absoluteURL);
     if (_isReadyToplay) {
         if (0 == self.player.rate) {
             [self.player play];
@@ -79,7 +59,6 @@
 - (void)pause
 {
     NSLog(@"player --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
-    NSLog(@"----------------pause %@ ",self.resourceUrl.absoluteURL);
     if (_isReadyToplay) {
         if (0 != self.player.rate) {
             [self.player pause];
@@ -95,7 +74,6 @@
 - (void)endPlay
 {
     NSLog(@"player --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
-    NSLog(@"----------------endPlay %@ ",self.resourceUrl.absoluteURL);
     if (_isReadyToplay) {
         if (0 != self.player.rate) {
             [self.player pause];
@@ -117,7 +95,6 @@
         if (self.playerItem) {
             [self.playerItem removeObserver:self forKeyPath:@"status" context:nil];
         }
-        NSLog(@"player --- %@ %@ success",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
         self.playerItem = [AVPlayerItem playerItemWithURL:localUrl];
         [self.playerItem addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionInitial|NSKeyValueObservingOptionNew context:nil];
         self.player = [[AVPlayer alloc] initWithPlayerItem:self.playerItem];
@@ -131,7 +108,6 @@
                 [self.layerView.layer addSublayer:self.playerLayer];
             }
         });
-        
     }else if(AGDownloadStatusDownloading == downloadStatus || AGDownloadStatusUnkown == downloadStatus){//
         self.playerStatus = AGPlayerStatusLoading;
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -159,7 +135,6 @@
                 _isReadyToplay = YES;
                 NSLog(@"player --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    NSLog(@"player ---- ready -----");
                     if (self.onReadyBlock) {
                         self.onReadyBlock(self);
                     }
@@ -178,6 +153,7 @@
 }
 - (void)playerItemDidReachEnd
 {// 播放结束
+    NSLog(@"player --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
     if (self.playerItem) {
         __weak typeof(self) weakSelf = self;
         [self.playerItem seekToTime:kCMTimeZero completionHandler:^(BOOL finished) {
