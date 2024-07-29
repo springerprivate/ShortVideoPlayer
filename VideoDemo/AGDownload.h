@@ -6,23 +6,38 @@
 //
 // 下载类
 /*
- 下载管理类会持有下载类，当下载完成（成功或者失败），从下载管理类中移除 只能在下载管理类中创建
- 下载类弱持有播放类，将下载情况传递给播放类
+ 下载类只能在下载管理类中创建，管理。
+ 下载管理类、player 会持有下载类。
+ 下载管理类会持有下载类，当下载完成（成功），从下载管理类中移除 只能在下载管理类中创建
+ 播放类持有（如果资源没有下载）下载类
  */
 
 #import <Foundation/Foundation.h>
-#import "AGDownloadDelegate.h"
-#import "AGDataTool.h"
+
+typedef NS_ENUM(NSInteger,AGDownloadStatus) {
+    AGDownloadStatusUnknow,// 未知
+    AGDownloadStatusDownloading,// 下载中
+    AGDownloadStatusSuccess,// 下载成功
+    AGDownloadStatusFailure,// 下载失败
+    AGDownloadStatusStoreFailure,// 资源存放失败
+    AGDownloadStatusCancel,// 取消下载
+};
 
 @interface AGDownload : NSObject
 
 @property (nonatomic,strong)NSURL *resourceUrl;// 资源地址
-@property (nonatomic,weak)id<AGDownloadDelegate> delegate;// 播放类 1、创建下载类是设置  2、替换设置 设置时，应回传当前下载状态
-@property (nonatomic,copy)void(^downloadBlock)(AGDownload *download,NSError *error);// 下载完成或失败回调 回调给下载管理类（下载管理管理该下载）
 
+@property (nonatomic,copy)void(^onEndDownloadBlock)(AGDownloadStatus downloadStatus,AGDownload *download,NSError *error);// 下载回调 回调给下载管理类（管理下载）
+@property (nonatomic,copy)void(^onDownloadBlock)(AGDownloadStatus downloadStatus,NSURL *localUrl,NSError *error);// 下载状态回调，回调给 player
+
+/// 开始下载
 - (void)startDownload;
 
+/// 取消下载
 - (void)cancelDownload;
+
+/// 下载状态上报
+- (void)reportDownloadStatus;
 
 @end
 

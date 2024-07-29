@@ -7,6 +7,7 @@
 
 #import "AGPlayer.h"
 #import <AVFoundation/AVFoundation.h>
+#import "AGVideoResourceCacheManager.h"
 
 @interface AGPlayer (){
     BOOL _isReadyToplay;// 
@@ -25,29 +26,70 @@
 
 @implementation AGPlayer
 
-- (instancetype)init{
-    self = [super init];
-    if (self) {
-        self.playerStatus = AGPlayerStatusLoading;
-    }
-    return self;
-}
-- (void)setOnPlayerStatusBlock:(void (^)(AGPlayerStatus))onPlayerStatusBlock{
+#pragma mark -set
+- (void)setOnPlayerStatusBlock:(void (^)(AGPlayerStatus))onPlayerStatusBlock
+{
     _onPlayerStatusBlock = onPlayerStatusBlock;
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (self->_onPlayerStatusBlock) {
-            self->_onPlayerStatusBlock(self.playerStatus);
+        if (self.onPlayerStatusBlock) {
+            self.onPlayerStatusBlock(self.playerStatus);
         }
     });
+}
+- (void)setDownload:(AGDownload *)download
+{
+    _download = download;
+    if (_download) {
+        __weak typeof(self)weakSelf = self;
+        _download.onDownloadBlock = ^(AGDownloadStatus downloadStatus, NSURL *localUrl, NSError *error) {// 下载回调
+            __strong typeof(weakSelf)strongSelf = weakSelf;
+            switch (downloadStatus) {
+                case AGDownloadStatusSuccess:{// 下载成功
+                    [strongSelf createPlayer];
+                    break;
+                }
+                case AGDownloadStatusFailure:
+                case AGDownloadStatusStoreFailure:{//下载失败
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        strongSelf.playerStatus = AGPlayerStatusFailure;
+                        if (strongSelf.onPlayerStatusBlock) {
+                            strongSelf.onPlayerStatusBlock(AGPlayerStatusFailure);
+                        }
+                    });
+                    break;
+                }
+                case AGDownloadStatusCancel:{
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        strongSelf.playerStatus = AGPlayerStatusFailure;
+                        if (strongSelf.onPlayerStatusBlock) {
+                            strongSelf.onPlayerStatusBlock(AGPlayerStatusFailure);
+                        }
+                    });
+                    break;
+                }
+                case AGDownloadStatusDownloading:{
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        strongSelf.playerStatus = AGPlayerStatusLoading;
+                        if (strongSelf.onPlayerStatusBlock) {
+                            strongSelf.onPlayerStatusBlock(AGPlayerStatusFailure);
+                        }
+                    });
+                }
+                    
+                default:
+                    break;
+            }
+        };
+        [_download reportDownloadStatus];
+    }
 }
 #pragma mark -public
 -(void)play
 {
     _playFlag = YES;
-    NSLog(@"player --- %@ %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString,[NSThread currentThread]);
+    NSLog(@"player --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
     if (_isReadyToplay) {
         if (0 == self.player.rate) {
-            NSLog(@"player ---play  %@ %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString,[NSThread currentThread]);
             [self.player play];
         }
         self.playerStatus = AGPlayerStatusPlay;
@@ -92,66 +134,43 @@
         });
     }
 }
-- (BOOL)resouceDownloadFailure{
-    return AGPlayerStatusFailure == self.playerStatus;
-}
 - (BOOL)playFlag{
     return _playFlag;
 }
-#pragma mark -AGDownloadDelegate
-- (void)agDownloadStatus:(AGDownloadStatus)downloadStatus localUrl:(NSURL *)localUrl error:(NSError *)error downloadBytes:(int64_t)downloadBytes totalBytes:(int64_t)totalBytes
-{
-    if (AGDownloadStatusSuccess == downloadStatus) {// 只能一次
-        NSLog(@"download playerItem  success %@ %@ %@",NSStringFromSelector(_cmd),self,self.resourceUrl.absoluteString);
-        if (!self.player) {//
-            self.playerItem = [AVPlayerItem playerItemWithURL:localUrl];
-            [self.playerItem addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionInitial|NSKeyValueObservingOptionNew context:nil];
-            self.player = [[AVPlayer alloc] initWithPlayerItem:self.playerItem];
-            [self addProgressObserver];
-            [self addNotifyWithObject:self.playerItem];
-            self.playerLayer = [AVPlayerLayer playerLayerWithPlayer:self.player];
-            self.playerLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (self.layerView) {
-                    self.playerLayer.frame = self.layerView.layer.frame;
-                    [self.layerView.layer addSublayer:self.playerLayer];
-                }
-            });
-        }
-    }else if(AGDownloadStatusDownloading == downloadStatus || AGDownloadStatusUnkown == downloadStatus){//
-        self.playerStatus = AGPlayerStatusLoading;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (self.onPlayerStatusBlock) {
-                self.onPlayerStatusBlock(AGPlayerStatusLoading);
-            }
-        });
-    }else{
-        self.playerStatus = AGPlayerStatusFailure;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (self.onPlayerStatusBlock) {
-                self.onPlayerStatusBlock(AGPlayerStatusFailure);
-            }
-        });
-        
+
+#pragma mark - create player
+- (void)createPlayer{
+    if (!self.player) {//
+        self.playerItem = [AVPlayerItem playerItemWithURL:[AGVideoResourceCacheManager getLocalResoureWithCacheKey:[AGVideoResourceCacheManager cacheKeyWithResourceUrl:self.resourceUrl]]];
+        [self.playerItem addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionInitial|NSKeyValueObservingOptionNew context:nil];
+        self.player = [[AVPlayer alloc] initWithPlayerItem:self.playerItem];
+        [self addProgressObserver];
+        [self addNotifyWithObject:self.playerItem];
+        self.playerLayer = [AVPlayerLayer playerLayerWithPlayer:self.player];
+        self.playerLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
     }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (self.layerView) {
+            self.playerLayer.frame = self.layerView.layer.frame;
+            [self.layerView.layer addSublayer:self.playerLayer];
+        }
+    });
 }
 #pragma mark -observe
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
 {
     if (object == self.playerItem) {
         if ([keyPath isEqualToString:@"status"]) {
-            NSLog(@"playerItem状态：：%ld %@", _playerItem.status,self.resourceUrl.absoluteString);
+            NSLog(@"player --- playerItem状态：：%ld  %@", _playerItem.status,self.resourceUrl.absoluteString);
             if (AVPlayerItemStatusReadyToPlay == self.playerItem.status) {
                 _isReadyToplay = YES;
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    if (self.onReadyBlock) {
-                        self.onReadyBlock(self);
-                    }
-                });
+                if (self.onReadyBlock) {
+                    self.onReadyBlock(self);
+                }
             }else if (AVPlayerItemStatusFailed == self.playerItem.status){
                 _isReadyToplay = NO;
-                self.playerStatus = AGPlayerStatusFailure;
                 dispatch_async(dispatch_get_main_queue(), ^{
+                    self.playerStatus = AGPlayerStatusFailure;
                     if (self.onPlayerStatusBlock) {
                         self.onPlayerStatusBlock(AGPlayerStatusFailure);
                     }
@@ -180,10 +199,11 @@
         if (strongSelf->_isReadyToplay) {
             float current = CMTimeGetSeconds(time);
             float total = CMTimeGetSeconds([strongSelf.playerItem duration]);
-            //更新视频播放进度方法回调
-            if (strongSelf.onPlayProgressBlock) {
-                strongSelf.onPlayProgressBlock(current, total);
-            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (strongSelf.onPlayProgressBlock) {//更新视频播放进度方法回调
+                    strongSelf.onPlayProgressBlock(current, total);
+                }
+            });
         }
     }];
 }
@@ -197,7 +217,7 @@
 #pragma mark -dealloc
 - (void)dealloc
 {
-    NSLog(@"dealloc--- %@ %@",NSStringFromSelector(_cmd),self);
+    NSLog(@"player --- dealloc--- %@ %@",NSStringFromSelector(_cmd),self);
     if (self.playerItem) {
         [self.playerItem removeObserver:self forKeyPath:@"status" context:nil];
         [[NSNotificationCenter defaultCenter] removeObserver:self name:AVPlayerItemDidPlayToEndTimeNotification object:self.playerItem];

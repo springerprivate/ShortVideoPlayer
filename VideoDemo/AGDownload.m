@@ -13,177 +13,123 @@
 
 @property (nonatomic,strong)NSURLSession *session;
 @property (nonatomic,strong)NSURLSessionDownloadTask *downloadTask;
-@property (nonatomic,strong)NSURL *localURL;
 
-@property (nonatomic,assign)AGDownloadStatus downloadStatus;// 下载状态
+@property (nonatomic,assign)AGDownloadStatus downloadStatus;
+
+@property (nonatomic,copy)NSURL *localUrl;
 
 @end
 
 @implementation AGDownload
 
-- (void)setDelegate:(id<AGDownloadDelegate>)delegate{
-    if (self->_delegate && (self->_delegate != delegate)) {// 代理替换
-        if (self->_delegate && [self->_delegate respondsToSelector:@selector(agDownloadStatus:localUrl:error:downloadBytes:totalBytes:)]) {// 原有代理
-            dispatch_async(dispatch_queue_create("com.renrui.videoDwonload.serialQueue", DISPATCH_QUEUE_SERIAL), ^{
-                [self->_delegate agDownloadStatus:AGDownloadStatusReplace
-                                   localUrl:nil
-                                      error:[self errorWithDownloadStatus:AGDownloadStatusReplace]
-                              downloadBytes:0
-                                 totalBytes:0];
-            });
-        }
-        self->_delegate = delegate;
-        if (self->_delegate && [self->_delegate respondsToSelector:@selector(agDownloadStatus:localUrl:error:downloadBytes:totalBytes:)]) {// 替换代理
-            dispatch_async(dispatch_queue_create("com.renrui.videoDwonload.serialQueue", DISPATCH_QUEUE_SERIAL), ^{
-                [self->_delegate agDownloadStatus:self.downloadStatus
-                                   localUrl:AGDownloadStatusSuccess == self.downloadStatus ? self.localURL : nil
-                                      error:[self errorWithDownloadStatus:self.downloadStatus]
-                              downloadBytes:0
-                                 totalBytes:0];
-            });
-        }
-    }else{
-        self->_delegate = delegate;
+- (void)reportDownloadStatus
+{
+    NSLog(@"download --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
+    if (self.onDownloadBlock) {
+        self.onDownloadBlock(self.downloadStatus, self.localUrl, [self errorWithDownloadStatus:self.downloadStatus]);
     }
 }
-- (void)startDownload{
-    NSLog(@"download -------------  %@ %@ %@",NSStringFromSelector(_cmd),self,self.resourceUrl.absoluteString);
-    dispatch_async(dispatch_queue_create("com.renrui.videoDwonload.serialQueue", DISPATCH_QUEUE_SERIAL), ^{
-        // 若资源存在，直接返回成功
-        NSURL *localUrl = [AGVideoResourceCacheManager getLocalResoureWithCacheKey:[AGVideoResourceCacheManager cacheKeyWithResourceUrl:self.resourceUrl]];
-        if (localUrl) {
-            self.downloadStatus = AGDownloadStatusSuccess;
-            if (self.delegate && [self.delegate respondsToSelector:@selector(agDownloadStatus:localUrl:error:downloadBytes:totalBytes:)]) {
-                [self.delegate agDownloadStatus:AGDownloadStatusSuccess
-                                   localUrl:localUrl
-                                      error:[self errorWithDownloadStatus:AGDownloadStatusSuccess]
-                              downloadBytes:0
-                                 totalBytes:0];
-            }
-            if (self.downloadBlock) {
-                __weak typeof(self)weakSelf = self;
-                self.downloadBlock(weakSelf,nil);
-            }
-            return;
-        }
-        self.downloadStatus = AGDownloadStatusUnkown;
-        NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
-        configuration.timeoutIntervalForRequest = 15;
-        self.session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
-        self.downloadTask = [self.session downloadTaskWithURL:self.resourceUrl];
-        [self.downloadTask resume];
-    });
+
+- (void)startDownload
+{
+    // 开始下载
+    self.downloadStatus = AGDownloadStatusDownloading;
+    if (self.onDownloadBlock) {
+        self.onDownloadBlock(AGDownloadStatusDownloading, nil, nil);
+    }
+    if (self.onEndDownloadBlock) {
+        __weak typeof(self)weakSelf = self;
+        self.onEndDownloadBlock(AGDownloadStatusDownloading,weakSelf,nil);
+    }
+    NSLog(@"download --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
+    [self.downloadTask resume];
 }
 
-- (void)cancelDownload{
-    NSLog(@"download -------------  %@ %@ %@",NSStringFromSelector(_cmd),self,self.resourceUrl.absoluteString);
-    dispatch_async(dispatch_queue_create("com.renrui.videoDwonload.serialQueue", DISPATCH_QUEUE_SERIAL), ^{
-        [self.downloadTask cancel];
-    });
+- (void)cancelDownload
+{
+    NSLog(@"download --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
+    [self.downloadTask cancel];
 }
 
 #pragma mark -NSURLSessionDownloadDelegate
-// 下载完成时调用
-- (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(NSURL *)location {
+- (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(NSURL *)location 
+{
+    NSLog(@"download --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
     NSString *documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
     NSString *path = [documentsPath stringByAppendingPathComponent:@"video"];
-    NSLog(@"download ------------- complete %@ %@ %@",NSStringFromSelector(_cmd),self,self.resourceUrl.absoluteString);
     if (![AGDataTool createFolder:path]) {
-        dispatch_async(dispatch_queue_create("com.renrui.videoDwonload.serialQueue", DISPATCH_QUEUE_SERIAL), ^{
-            self.downloadStatus = AGDownloadStatusStoreFailure;
-            NSLog(@"download ------------- createfolder storefailure %@ %@ %@",NSStringFromSelector(_cmd),self,self.resourceUrl.absoluteString);
-            if (self.delegate && [self.delegate respondsToSelector:@selector(agDownloadStatus:localUrl:error:downloadBytes:totalBytes:)]) {
-                [self.delegate agDownloadStatus:AGDownloadStatusStoreFailure
-                                   localUrl:nil
-                                      error:[self errorWithDownloadStatus:AGDownloadStatusStoreFailure]
-                              downloadBytes:0
-                                 totalBytes:0];
-            }
-            if (self.downloadBlock) {
-                __weak typeof(self)weakSelf = self;
-                self.downloadBlock(weakSelf,[self errorWithDownloadStatus:AGDownloadStatusStoreFailure]);
-            }
-            [self.session invalidateAndCancel];
-        });
+        NSLog(@"download --- store failure");
+        self.downloadStatus = AGDownloadStatusStoreFailure;
+        if (self.onDownloadBlock) {
+            self.onDownloadBlock(AGDownloadStatusStoreFailure, nil, [self errorWithDownloadStatus:AGDownloadStatusStoreFailure]);
+        }
+        if (self.onEndDownloadBlock) {
+            __weak typeof(self)weakSelf = self;
+            self.onEndDownloadBlock(AGDownloadStatusStoreFailure,weakSelf,[self errorWithDownloadStatus:AGDownloadStatusStoreFailure]);
+        }
+        [self.session invalidateAndCancel];
     }else{
         NSString *destinationPath = [path stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mp4",[AGVideoResourceCacheManager  cacheKeyWithResourceUrl:self.resourceUrl]]];
         NSURL *destinationURL = [NSURL fileURLWithPath:destinationPath];
         NSFileManager *fileManager = [NSFileManager defaultManager];
         NSError *error;
         [fileManager moveItemAtURL:location toURL:destinationURL error:&error];
-        dispatch_async(dispatch_queue_create("com.renrui.videoDwonload.serialQueue", DISPATCH_QUEUE_SERIAL), ^{
-            if (error) {
-                self.downloadStatus = AGDownloadStatusStoreFailure;
-                NSLog(@"download ------------- storefailure %@ %@ %@",NSStringFromSelector(_cmd),self,self.resourceUrl.absoluteString);
-                if (self.delegate && [self.delegate respondsToSelector:@selector(agDownloadStatus:localUrl:error:downloadBytes:totalBytes:)]) {
-                    [self.delegate agDownloadStatus:AGDownloadStatusStoreFailure
-                                           localUrl:nil
-                                              error:[self errorWithDownloadStatus:AGDownloadStatusStoreFailure]
-                                      downloadBytes:0
-                                         totalBytes:0];
-                }
-                if (self.downloadBlock) {
-                    __weak typeof(self)weakSelf = self;
-                    self.downloadBlock(weakSelf,[self errorWithDownloadStatus:AGDownloadStatusStoreFailure]);
-                }
-            } else {
-                self.localURL = [NSURL fileURLWithPath:destinationPath];
-                self.downloadStatus = AGDownloadStatusSuccess;
-                NSLog(@"download ------------- success %@ %@ %@",NSStringFromSelector(_cmd),self,self.resourceUrl.absoluteString);
-                if (self.delegate && [self.delegate respondsToSelector:@selector(agDownloadStatus:localUrl:error:downloadBytes:totalBytes:)]) {
-                    [self.delegate agDownloadStatus:AGDownloadStatusSuccess
-                                           localUrl:self.localURL
-                                              error:[self errorWithDownloadStatus:AGDownloadStatusSuccess]
-                                      downloadBytes:0
-                                         totalBytes:0];
-                }
-                if (self.downloadBlock) {
-                    __weak typeof(self)weakSelf = self;
-                    self.downloadBlock(weakSelf,[self errorWithDownloadStatus:AGDownloadStatusSuccess]);
-                }
+        if (error) {
+            NSLog(@"download --- store failure");
+            self.downloadStatus = AGDownloadStatusStoreFailure;
+            if (self.onDownloadBlock) {
+                self.onDownloadBlock(AGDownloadStatusStoreFailure, nil, [self errorWithDownloadStatus:AGDownloadStatusStoreFailure]);
             }
-            [self.session invalidateAndCancel];
-        });
+            if (self.onEndDownloadBlock) {
+                __weak typeof(self)weakSelf = self;
+                self.onEndDownloadBlock(AGDownloadStatusStoreFailure,weakSelf,[self errorWithDownloadStatus:AGDownloadStatusStoreFailure]);
+            }
+        } else {
+            NSLog(@"download --- success");
+            self.downloadStatus = AGDownloadStatusSuccess;
+            self.localUrl = [NSURL fileURLWithPath:destinationPath];
+            if (self.onDownloadBlock) {
+                self.onDownloadBlock(AGDownloadStatusSuccess, self.localUrl, nil);
+            }
+            if (self.onEndDownloadBlock) {
+                __weak typeof(self)weakSelf = self;
+                self.onEndDownloadBlock(AGDownloadStatusSuccess,weakSelf,nil);
+            }
+        }
+        [self.session invalidateAndCancel];
     }
 }
-- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error
+{
+    NSLog(@"download --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
     if (error) {
-        NSLog(@"download ------------- error %@ %@ %@",NSStringFromSelector(_cmd),self,self.resourceUrl.absoluteString);
-        dispatch_async(dispatch_queue_create("com.renrui.videoDwonload.serialQueue", DISPATCH_QUEUE_SERIAL), ^{
-            if ([error.domain isEqualToString:NSURLErrorDomain] && error.code == NSURLErrorCancelled) {
-                self.downloadStatus = AGDownloadStatusCancel;
-                if (self.delegate && [self.delegate respondsToSelector:@selector(agDownloadStatus:localUrl:error:downloadBytes:totalBytes:)]) {
-                    [self.delegate agDownloadStatus:AGDownloadStatusStoreFailure
-                                       localUrl:nil
-                                          error:[self errorWithDownloadStatus:AGDownloadStatusCancel]
-                                  downloadBytes:0
-                                     totalBytes:0];
-                }
-                
-                if (self.downloadBlock) {
-                    __weak typeof(self)weakSelf = self;
-                    self.downloadBlock(weakSelf,[self errorWithDownloadStatus:AGDownloadStatusCancel]);
-                }
-            } else {
-                self.downloadStatus = AGDownloadStatusFailure;
-                if (self.delegate && [self.delegate respondsToSelector:@selector(agDownloadStatus:localUrl:error:downloadBytes:totalBytes:)]) {
-                    [self.delegate agDownloadStatus:AGDownloadStatusFailure
-                                       localUrl:nil
-                                          error:[self errorWithDownloadStatus:AGDownloadStatusFailure]
-                                  downloadBytes:0
-                                     totalBytes:0];
-                }
-                if (self.downloadBlock) {
-                    __weak typeof(self)weakSelf = self;
-                    self.downloadBlock(weakSelf,[self errorWithDownloadStatus:AGDownloadStatusFailure]);
-                }
+        if ([error.domain isEqualToString:NSURLErrorDomain] && error.code == NSURLErrorCancelled) {
+            NSLog(@"download --- cancel");
+            self.downloadStatus = AGDownloadStatusCancel;
+            if (self.onDownloadBlock) {
+                self.onDownloadBlock(AGDownloadStatusCancel, nil, [self errorWithDownloadStatus:AGDownloadStatusCancel]);
             }
-            [self.session invalidateAndCancel];
-        });
+            if (self.onEndDownloadBlock) {
+                __weak typeof(self)weakSelf = self;
+                self.onEndDownloadBlock(AGDownloadStatusCancel,weakSelf,[self errorWithDownloadStatus:AGDownloadStatusCancel]);
+            }
+        } else {
+            NSLog(@"download --- failure");
+            self.downloadStatus = AGDownloadStatusFailure;
+            if (self.onEndDownloadBlock) {
+                __weak typeof(self)weakSelf = self;
+                self.onEndDownloadBlock(AGDownloadStatusFailure,weakSelf,[self errorWithDownloadStatus:AGDownloadStatusFailure]);
+            }
+            if (self.onEndDownloadBlock) {
+                __weak typeof(self)weakSelf = self;
+                self.onEndDownloadBlock(AGDownloadStatusFailure,weakSelf,[self errorWithDownloadStatus:AGDownloadStatusFailure]);
+            }
+        }
+        [self.session invalidateAndCancel];
     }
 }
-
-- (NSError *)errorWithDownloadStatus:(AGDownloadStatus)downloadStatus{
+- (NSError *)errorWithDownloadStatus:(AGDownloadStatus)downloadStatus
+{
     switch (downloadStatus) {
         case AGDownloadStatusCancel:{
             return [NSError errorWithDomain:@"" 
@@ -206,13 +152,6 @@
                                               NSLocalizedFailureReasonErrorKey:@"文件存储错误"}];
             break;
         }
-        case AGDownloadStatusReplace:{
-            return [NSError errorWithDomain:@""
-                                       code:AGDownloadStatusReplace
-                                   userInfo:@{NSLocalizedDescriptionKey:@"下载失败",
-                                              NSLocalizedFailureReasonErrorKey:@"下载被替代"}];
-            break;
-        }
             
         default:
             break;
@@ -220,21 +159,30 @@
     return nil;
 }
 
-- (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didWriteData:(int64_t)bytesWritten totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite {
-    dispatch_async(dispatch_queue_create("com.renrui.videoDwonload.serialQueue", DISPATCH_QUEUE_SERIAL), ^{
-        self.downloadStatus = AGDownloadStatusDownloading;
-        if (self.delegate && [self.delegate respondsToSelector:@selector(agDownloadStatus:localUrl:error:downloadBytes:totalBytes:)]) {
-            [self.delegate agDownloadStatus:AGDownloadStatusDownloading
-                               localUrl:nil
-                                  error:[self errorWithDownloadStatus:AGDownloadStatusDownloading]
-                          downloadBytes:totalBytesWritten
-                             totalBytes:totalBytesExpectedToWrite];
-        }
-    });
+- (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didWriteData:(int64_t)bytesWritten totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite 
+{
+}
+#pragma mark - lazy load
+- (NSURLSession *)session
+{
+    if (nil == _session) {
+        NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+        configuration.timeoutIntervalForRequest = 15;
+        _session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
+    }
+    return _session;
+}
+- (NSURLSessionDownloadTask *)downloadTask
+{
+    if (nil == _downloadTask) {
+        _downloadTask = [self.session downloadTaskWithURL:self.resourceUrl];
+    }
+    return _downloadTask;
 }
 #pragma mark -dealloc
-- (void)dealloc{
-    NSLog(@"download -------------  %@ %@ %@",NSStringFromSelector(_cmd),self,self.resourceUrl.absoluteString);
+- (void)dealloc
+{
+    NSLog(@"download ---- %@ %@ %@",NSStringFromSelector(_cmd),self,self.resourceUrl.absoluteString);
 }
 
 @end

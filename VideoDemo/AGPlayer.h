@@ -4,13 +4,17 @@
 //
 //  Created by agui on 2024/7/16.
 //
-// 播放类  只能通过 AGPlayerManager 创建 分配 管理
-
+// 播放类
+/*
+ 只能通过 管理类 创建 分配 管理
+ 持有下载类，如果下载成功，则不再持有下载类
+ */
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "AGDownloadDelegate.h"
+#import "AGDownload.h"
 
 typedef NS_ENUM(NSInteger,AGPlayerStatus) {
+    AGPlayerStatusUnkown,
     AGPlayerStatusLoading,// 加载资源
     AGPlayerStatusFailure,// 失败
     AGPlayerStatusPlay,// 播放
@@ -18,12 +22,14 @@ typedef NS_ENUM(NSInteger,AGPlayerStatus) {
     AGPlayerStatusEndPlay,// 结束播放
 };
 
-@interface AGPlayer : NSObject<AGDownloadDelegate>
-
-@property (nonatomic,weak)UIView *layerView;// 盛放playerlayer
+@interface AGPlayer : NSObject
 
 /// 资源远程地址， 只作为标识
 @property (nonatomic,strong)NSURL *resourceUrl;
+
+@property (nonatomic,strong)AGDownload *download;// 下载类
+
+@property (nonatomic,weak)UIView *layerView;// 盛放playerlayer
 
 #pragma mark - 回调给 显示 （与当前播放状态、进度 有关）
 /// 播放状态回调 （包含了资源加载）
@@ -36,9 +42,6 @@ typedef NS_ENUM(NSInteger,AGPlayerStatus) {
 @property (nonatomic,copy)void(^onPlayEndResetBlock)(AGPlayer *player);
 /// 资源准备完成
 @property (nonatomic,copy)void(^onReadyBlock)(AGPlayer *player);
-
-///  资源下载是否失败
-- (BOOL)resouceDownloadFailure;
 
 /// 获取播放标记  管理器是否允许播放
 - (BOOL)playFlag;

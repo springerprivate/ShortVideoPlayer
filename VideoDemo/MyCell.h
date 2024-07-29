@@ -14,7 +14,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,strong)AGPlayer *player;
 
 @property (nonatomic,strong)NSIndexPath *indexPath;
-@property (nonatomic,strong)UILabel *statusLab;
 
 @end
 

@@ -40,7 +40,6 @@
 		9448247A2C4658FC001561CD /* AGDownloadManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AGDownloadManager.m; sourceTree = "<group>"; };
 		9448247C2C465906001561CD /* AGDownload.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AGDownload.h; sourceTree = "<group>"; };
 		9448247D2C465906001561CD /* AGDownload.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AGDownload.m; sourceTree = "<group>"; };
-		9448247F2C467119001561CD /* AGDownloadDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AGDownloadDelegate.h; sourceTree = "<group>"; };
 		944824802C46769E001561CD /* AGVideoResourceCacheManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AGVideoResourceCacheManager.h; sourceTree = "<group>"; };
 		944824812C46769E001561CD /* AGVideoResourceCacheManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AGVideoResourceCacheManager.m; sourceTree = "<group>"; };
 		944824832C4690D3001561CD /* AGDataTool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AGDataTool.h; sourceTree = "<group>"; };
@@ -95,7 +94,6 @@
 				944824772C4658E5001561CD /* AGPlayer.m */,
 				944824792C4658FC001561CD /* AGDownloadManager.h */,
 				9448247A2C4658FC001561CD /* AGDownloadManager.m */,
-				9448247F2C467119001561CD /* AGDownloadDelegate.h */,
 				9448247C2C465906001561CD /* AGDownload.h */,
 				9448247D2C465906001561CD /* AGDownload.m */,
 				944824802C46769E001561CD /* AGVideoResourceCacheManager.h */,

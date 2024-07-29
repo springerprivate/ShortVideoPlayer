@@ -8,26 +8,26 @@
 /*
  1、持有、管理视频资源下载
  2、做线程安全管理
- 3、下载有优先级管理，对于当前要播放的，优先下载。同时下载做数量限制。有待下载队列管理。
+ 3、下载有优先级管理，对于当前要播放的，优先下载。 如果取消下载，则将下载移到待下载队列中管理。
+ 4、下载完成，取消持有关系
  */
 #import <Foundation/Foundation.h>
-#import "AGDownloadDelegate.h"
 
-@class AGDownload,AGPlayer;
+@class AGDownload;
 @interface AGDownloadManager : NSObject
 
 /// 单例
 + (instancetype)shareManager;
 
-/// 下载资源  若资源已存在，直接通知 player 或 不再处理。
+/// 下载创建
 /// - Parameters:
-///   - resourceUrl: 资源地址
-///   - player: 可为空 若为空，则下载不关联播放器，且该下载可能会放在待下载队列中。
-- (void)downloadWithResourceUrl:(NSURL *)resourceUrl player:(id <AGDownloadDelegate>)player;
+///   - resourceUrl: 下载资源
+///   - onResultBlock: 下载创建回调  如果资源已存在，download 为空，切不会将下载放到下载队列中
+- (void)createDownloadWithResourceUrl:(NSURL *)resourceUrl result:(void(^)(AGDownload *download))onResultBlock;
 
-/// 取消下载
-/// - Parameter resourceUrl: 资源地址
-- (void)cancelDownloadWithResourceUrl:(NSURL *)resourceUrl;
+/// 预下载
+/// - Parameter resourceUrl: 下载资源
+- (void)predownloadWithResourceUrl:(NSURL *)resourceUrl;
 
 @end
 

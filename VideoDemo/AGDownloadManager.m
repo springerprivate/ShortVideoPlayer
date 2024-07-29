@@ -9,14 +9,13 @@
 #import "AGDownload.h"
 #import "AGVideoResourceCacheManager.h"
 
-#define kDownloadingMaxNum 5
-
 @interface AGDownloadManager (){
     dispatch_queue_t _serialQueue;
 }
 
-@property (nonatomic,strong)NSMutableArray <NSURL *>*downloadQueueMuArr;// 待下载队列
-@property (nonatomic,strong)NSMutableArray <AGDownload *>*downloadingMuArr;// 下载
+@property (nonatomic,strong)NSMutableArray <AGDownload *>*downloadQueueMuArr;// 待下载队列
+
+@property (nonatomic,strong)AGDownload *currentDownload;// 当前下载
 
 @end
 
@@ -31,124 +30,98 @@
     });
     return downloadManager;
 }
-
+#pragma mark -set
+- (void)setCurrentDownload:(AGDownload *)currentDownload{
+    _currentDownload = currentDownload;
+    [_currentDownload startDownload];
+}
 #pragma mark -public
-- (void)downloadWithResourceUrl:(NSURL *)resourceUrl player:(id <AGDownloadDelegate>)player{
-    if (!(resourceUrl && resourceUrl.scheme)) {// 无效
-        return;
-    }
-    dispatch_async(_serialQueue, ^{
+- (void)createDownloadWithResourceUrl:(NSURL *)resourceUrl result:(void (^)(AGDownload *))onResultBlock{
+    NSLog(@"downloadManager --- %@ %@",NSStringFromSelector(_cmd),resourceUrl.absoluteString);
+    dispatch_async(dispatch_queue_create("com.renrui.videoDwonloadManager.serialQueue", DISPATCH_QUEUE_SERIAL), ^{
         // 如果资源已存在，则不再处理
         NSURL *localUrl = [AGVideoResourceCacheManager getLocalResoureWithCacheKey:[AGVideoResourceCacheManager cacheKeyWithResourceUrl:resourceUrl]];
         if (localUrl) {// 如果与播放器绑定，回调给播放器
-            if (player && [player respondsToSelector:@selector(agDownloadStatus:localUrl:error:downloadBytes:totalBytes:)]) {
-                [player agDownloadStatus:AGDownloadStatusSuccess localUrl:localUrl error:nil downloadBytes:0 totalBytes:0];
+            if (onResultBlock) {
+                onResultBlock(nil);
             }
             return;
         }
-        for (AGDownload *download in self.downloadingMuArr) {
-            if ([download.resourceUrl.absoluteString isEqualToString:resourceUrl.absoluteString]) {
-//                download.delegate = player;
-                return;
-            }
-        }
-        for (NSURL *url in self.downloadQueueMuArr) {
-            if ([url.absoluteString isEqualToString:resourceUrl.absoluteString]) {
-                if ([self.downloadingMuArr count] < kDownloadingMaxNum) {
-                    [self.downloadQueueMuArr removeObject:url];
-                    [self createDownloadWithResourceUrl:resourceUrl player:player];
+        if (self.currentDownload) {
+            if ([self.currentDownload.resourceUrl.absoluteString isEqualToString:resourceUrl.absoluteString]) {
+                if (onResultBlock) {
+                    onResultBlock(self.currentDownload);
                 }
                 return;
+            }else{
+                [self.currentDownload cancelDownload];
             }
         }
-        if ([self.downloadingMuArr count] < kDownloadingMaxNum) {
-            [self createDownloadWithResourceUrl:resourceUrl player:player];
-        }else{
-            [self.downloadQueueMuArr addObject:resourceUrl];
+        for (AGDownload *download in self.downloadQueueMuArr) {
+            if ([download.resourceUrl.absoluteString isEqualToString:resourceUrl.absoluteString]) {
+                if (onResultBlock) {
+                    onResultBlock(download);
+                }
+                self.currentDownload = download;
+                return;
+            }
         }
-//        if (player) {// 如果 是player传递过来
-//            while ([self.downloadingMuArr count] >= kDownloadingMaxNum) {
-//                AGDownload *download = [self.downloadingMuArr lastObject];
-//                [download cancelDownload];
-//                [self.downloadingMuArr removeObject:download];
-//            }
-//            [self createDownloadWithResourceUrl:resourceUrl player:player];
-//        }else{
-//            for (NSURL *url in self.downloadQueueMuArr) {
-//                if ([url.absoluteString isEqualToString:resourceUrl.absoluteString]) {
-//                    if ([self.downloadingMuArr count] < kDownloadingMaxNum) {
-//                        [self.downloadQueueMuArr removeObject:url];
-//                        [self createDownloadWithResourceUrl:resourceUrl player:player];
-//                    }
-//                    return;
-//                }
-//            }
-//            if ([self.downloadingMuArr count] < kDownloadingMaxNum) {
-//                [self createDownloadWithResourceUrl:resourceUrl player:player];
-//            }else{
-//                [self.downloadQueueMuArr addObject:resourceUrl];
-//            }
-//        }
+        AGDownload *download =  [self createDownloadWithResourceUrl:resourceUrl];
+        self.currentDownload = download;
+        if (onResultBlock) {
+            onResultBlock(download);
+        }
     });
 }
-
+- (void)predownloadWithResourceUrl:(NSURL *)resourceUrl{
+    NSLog(@"downloadManager --- %@ %@",NSStringFromSelector(_cmd),resourceUrl.absoluteString);
+    dispatch_async(_serialQueue, ^{
+        for (AGDownload *download in self.downloadQueueMuArr) {
+            if ([download.resourceUrl.absoluteString isEqualToString:resourceUrl.absoluteString]) {
+                return;
+            }
+        }
+        [self createDownloadWithResourceUrl:resourceUrl];
+        if (nil == self.currentDownload) {
+            [self reloadDownload];
+        }
+    });
+}
 - (void)reloadDownload{
-    while ([self.downloadQueueMuArr count] && [self.downloadingMuArr count] < kDownloadingMaxNum) {
-        NSURL *url = [self.downloadQueueMuArr objectAtIndex:0];
-        [self.downloadQueueMuArr removeObject:url];
-        [self createDownloadWithResourceUrl:url player:nil];
+    if ([self.downloadQueueMuArr count]) {
+        self.currentDownload = self.downloadQueueMuArr[0];
     }
 }
-
-- (void)createDownloadWithResourceUrl:(NSURL *)resourceUrl player:(id <AGDownloadDelegate>)player{
+- (AGDownload *)createDownloadWithResourceUrl:(NSURL *)resourceUrl{
+    NSLog(@"downloadManager --- %@ %@",NSStringFromSelector(_cmd),resourceUrl.absoluteString);
     AGDownload *downLoad = [AGDownload new];
     downLoad.resourceUrl = resourceUrl;
-    downLoad.delegate = player;
     __weak typeof(self) weakSelf = self;
-    downLoad.downloadBlock = ^(AGDownload *download,NSError *error) {
+    downLoad.onEndDownloadBlock = ^(AGDownloadStatus downloadStatus, AGDownload *download, NSError *error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         dispatch_async(strongSelf->_serialQueue, ^{
-            if ([strongSelf.downloadingMuArr containsObject:download]) {
-                [strongSelf.downloadingMuArr removeObject:download];
+            if (AGDownloadStatusSuccess == downloadStatus) {// 成功
+                [strongSelf.downloadQueueMuArr removeObject:download];
+                if (strongSelf.currentDownload == download) {
+                    strongSelf.currentDownload = nil;
+                    [strongSelf reloadDownload];
+                }
+            }else if(AGDownloadStatusFailure == downloadStatus || AGDownloadStatusStoreFailure == downloadStatus){// 失败
+                if (strongSelf.currentDownload == download) {
+                    [strongSelf reloadDownload];
+                }
             }
-            [strongSelf reloadDownload];
         });
     };
-    [self.downloadingMuArr insertObject:downLoad atIndex:0];
-    [downLoad startDownload];
+    [self.downloadQueueMuArr insertObject:downLoad atIndex:0];
+    return downLoad;
 }
 
-- (void)cancelDownloadWithResourceUrl:(NSURL *)resourceUrl{
-    if (!(resourceUrl && resourceUrl.scheme)) {// 无效
-        return;
-    }
-    dispatch_async(_serialQueue, ^{
-        for (AGDownload *download in self.downloadingMuArr) {
-            if ([download.resourceUrl.absoluteString isEqualToString:resourceUrl.absoluteString]) {
-                [download cancelDownload];
-                return;
-            }
-        }
-        for (NSURL *url in self.downloadQueueMuArr) {
-            if ([url.absoluteString isEqualToString:resourceUrl.absoluteString]) {
-                [self.downloadQueueMuArr removeObject:url];
-                return;
-            }
-        }
-    });
-}
 #pragma mark -lazy load
-- (NSMutableArray<NSURL *> *)downloadQueueMuArr{
+- (NSMutableArray<AGDownload *> *)downloadQueueMuArr{
     if (nil == _downloadQueueMuArr) {
         _downloadQueueMuArr = [[NSMutableArray alloc] initWithCapacity:0];
     }
     return _downloadQueueMuArr;
 }
-- (NSMutableArray<AGDownload *> *)downloadingMuArr{
-    if (nil == _downloadingMuArr) {
-        _downloadingMuArr = [[NSMutableArray alloc] initWithCapacity:0];
-    }
-    return _downloadingMuArr;
-}
-
 @end

@@ -12,6 +12,7 @@
 @interface MyCell ()
 
 @property (nonatomic,strong)UILabel *indexLab;
+@property (nonatomic,strong)UILabel *statusLab;
 
 @end
 
@@ -45,7 +46,7 @@
 //        NSLog(@"cell progress current == %f total == %f",current,total);
     };
     __weak typeof(self)weakSelf = self;
-    _player.onPlayerStatusBlock = ^(AGPlayerStatus playerStatus) {
+    _player.onPlayerStatusBlock = ^(AGPlayerStatus playerStatus) {// 在主线程中
         __strong typeof(weakSelf)strongSelf = weakSelf;
         NSString *statusStr = @"";
         switch (playerStatus) {
@@ -86,6 +87,7 @@
 
     // Configure the view for the selected state
 }
+#pragma mark -lazy load
 - (UILabel *)statusLab{
     if (nil == _statusLab) {
         _statusLab = [[UILabel alloc] initWithFrame:CGRectMake(100, 100, 150, 40)];

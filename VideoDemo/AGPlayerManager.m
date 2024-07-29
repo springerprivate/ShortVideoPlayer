@@ -8,11 +8,12 @@
 #import "AGPlayerManager.h"
 
 @interface AGPlayerManager (){
-    AGPlayer *_currentPlayPlayer;//当前播放类
     dispatch_queue_t _serialQueue;
 }
 
 @property (nonatomic,strong)NSMutableArray <AGPlayer *>* playerMuArr;// 持有播放类，做数量限制 时间越近，坐标越靠前
+
+@property (nonatomic,strong)AGPlayer *currentPlayPlayer;//当前播放类
 
 @end
 
@@ -30,21 +31,21 @@
 #pragma mark -public
 - (void)playerPlayWithPlayer:(AGPlayer *)player
 {
-    NSLog(@"playermanager --- %@ %@",NSStringFromSelector(_cmd),player.resourceUrl.absoluteString);
+    NSLog(@"playermanager --- %@ %@",NSStringFromSelector(_cmd),_currentPlayPlayer.resourceUrl.absoluteString);
     dispatch_async(_serialQueue, ^{
-        if (self->_currentPlayPlayer && self->_currentPlayPlayer != player) {
-            [self->_currentPlayPlayer endPlay];
+        if (self.currentPlayPlayer && self.currentPlayPlayer != player) {
+            [self.currentPlayPlayer endPlay];
         }
-        self->_currentPlayPlayer = player;
-        [self->_currentPlayPlayer play];
+        self.currentPlayPlayer = player;
+        [self.currentPlayPlayer play];
     });
 }
 - (void)playerPause
 {
     NSLog(@"playermanager --- %@ %@",NSStringFromSelector(_cmd),_currentPlayPlayer.resourceUrl.absoluteString);
     dispatch_async(_serialQueue, ^{
-        if (self->_currentPlayPlayer) {
-            [self->_currentPlayPlayer pause];
+        if (self.currentPlayPlayer) {
+            [self.currentPlayPlayer pause];
         }
     });
 }
@@ -52,16 +53,17 @@
 {
     NSLog(@"playermanager --- %@ %@",NSStringFromSelector(_cmd),_currentPlayPlayer.resourceUrl.absoluteString);
     dispatch_async(_serialQueue, ^{
-        if (self->_currentPlayPlayer) {
-            [self->_currentPlayPlayer endPlay];
+        if (self.currentPlayPlayer) {
+            [self.currentPlayPlayer endPlay];
         }
     });
 }
 - (void)playerReadyToPlay:(AGPlayer *)player{
+    NSLog(@"playermanager --- %@ %@",NSStringFromSelector(_cmd),_currentPlayPlayer.resourceUrl.absoluteString);
     dispatch_async(_serialQueue, ^{
-        if (self->_currentPlayPlayer && self->_currentPlayPlayer == player) {
+        if (self.currentPlayPlayer && self.currentPlayPlayer == player) {
             if ([player playFlag]) {
-                [self->_currentPlayPlayer play];
+                [self.currentPlayPlayer play];
             }
         }
     });
@@ -87,12 +89,10 @@
     __weak typeof(self) weakSelf = self;
     player.onPlayEndResetBlock = ^(AGPlayer *player) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        NSLog(@"playermanager onPlayEndResetBlock --- %@ %@",NSStringFromSelector(_cmd),self->_currentPlayPlayer.resourceUrl.absoluteString);
         [strongSelf playerReadyToPlay:player];
     };
     player.onReadyBlock = ^(AGPlayer *player) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        NSLog(@"playermanager onReadyBlock --- %@ %@",NSStringFromSelector(_cmd),self->_currentPlayPlayer.resourceUrl.absoluteString);
         [strongSelf playerReadyToPlay:player];
     };
     [self.playerMuArr insertObject:player atIndex:0];
