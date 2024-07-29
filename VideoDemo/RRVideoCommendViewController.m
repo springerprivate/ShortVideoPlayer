@@ -84,9 +84,9 @@
 //    cell.contentView.layer.borderColor = [UIColor redColor].CGColor;
     cell.indexPath = indexPath;
     AGPlayer *player = [[AGPlayerManager shareManager] playerWithResourceUrl:[NSURL URLWithString:str]];
-    [[AGDownloadManager shareManager] createDownloadWithResourceUrl:[NSURL URLWithString:str] result:^(AGDownload *download) {
-        player.download = download;
-    }];
+//    [[AGDownloadManager shareManager] createDownloadWithResourceUrl:[NSURL URLWithString:str] result:^(AGDownload *download) {
+//        player.download = download;
+//    }];
     cell.player = player;
     return cell;
 }
@@ -110,15 +110,19 @@
     }
     _currentIndex = indexPath;
     AGPlayer *player = ((MyCell *)cell).player;
-    NSLog(@"---------------------------------------- %@ %@ ",indexPath,player.resourceUrl.absoluteString);
-    [[AGPlayerManager shareManager] playerPlayWithPlayer:((MyCell *)cell).player];
-    
-    for (int index = 1; index < 3; index ++) {
-        if ([self.list count] > (index + indexPath.row)) {
-            NSString *str = self.list[indexPath.row + index];
-            [[AGDownloadManager shareManager] predownloadWithResourceUrl:[NSURL URLWithString:str]];
+    NSLog(@"----------------------------------------didDisplayCell %@ %@ ",indexPath,player.resourceUrl.absoluteString);
+    NSString *str = self.list[indexPath.row];
+    [[AGDownloadManager shareManager] createDownloadWithResourceUrl:[NSURL URLWithString:str] result:^(AGDownload *download) {
+        player.download = download;
+        [[AGPlayerManager shareManager] playerPlayWithPlayer:((MyCell *)cell).player];
+        
+        for (int index = 1; index < 6; index ++) {
+            if ([self.list count] > (index + indexPath.row)) {
+                NSString *str = self.list[indexPath.row + index];
+                [[AGDownloadManager shareManager] predownloadWithResourceUrl:[NSURL URLWithString:str]];
+            }
         }
-    }
+    }];
 }
 #pragma mark -lazyLoad
 - (NSMutableArray<NSString *> *)list{
@@ -131,11 +135,9 @@
     if (nil == _tableView) {
         _tableView = [[UITableView alloc] initWithFrame:[UIScreen mainScreen].bounds];
         _tableView.backgroundColor = [UIColor yellowColor];
-        _tableView.estimatedRowHeight = 0;
-
-         _tableView.estimatedSectionHeaderHeight = 0;
-
-          _tableView.estimatedSectionFooterHeight = 0;
+//        _tableView.estimatedRowHeight = 0;
+//        _tableView.estimatedSectionHeaderHeight = 0;
+//        _tableView.estimatedSectionFooterHeight = 0;
         _tableView.delegate = self;
         _tableView.dataSource = self;
         _tableView.showsVerticalScrollIndicator = NO;
