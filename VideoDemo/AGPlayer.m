@@ -10,6 +10,7 @@
 
 @interface AGPlayer (){
     BOOL _isReadyToplay;// 
+    BOOL _playFlag;
 }
 
 @property (nonatomic ,strong)AVPlayerItem *playerItem;//视频资源载体
@@ -27,7 +28,6 @@
 - (instancetype)init{
     self = [super init];
     if (self) {
-        [self addNotify];
         self.playerStatus = AGPlayerStatusLoading;
     }
     return self;
@@ -43,9 +43,11 @@
 #pragma mark -public
 -(void)play
 {
+    _playFlag = YES;
     NSLog(@"player --- %@ %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString,[NSThread currentThread]);
     if (_isReadyToplay) {
         if (0 == self.player.rate) {
+            NSLog(@"player ---play  %@ %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString,[NSThread currentThread]);
             [self.player play];
         }
         self.playerStatus = AGPlayerStatusPlay;
@@ -54,12 +56,11 @@
                 self.onPlayerStatusBlock(AGPlayerStatusPlay);
             }
         });
-    }else{
-        
     }
 }
 - (void)pause
 {
+    _playFlag = NO;
     NSLog(@"player --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
     if (_isReadyToplay) {
         if (0 != self.player.rate) {
@@ -75,6 +76,7 @@
 }
 - (void)endPlay
 {
+    _playFlag = NO;
     NSLog(@"player --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
     if (_isReadyToplay) {
         if (0 != self.player.rate) {
@@ -93,26 +95,29 @@
 - (BOOL)resouceDownloadFailure{
     return AGPlayerStatusFailure == self.playerStatus;
 }
+- (BOOL)playFlag{
+    return _playFlag;
+}
 #pragma mark -AGDownloadDelegate
 - (void)agDownloadStatus:(AGDownloadStatus)downloadStatus localUrl:(NSURL *)localUrl error:(NSError *)error downloadBytes:(int64_t)downloadBytes totalBytes:(int64_t)totalBytes
 {
-    if (AGDownloadStatusSuccess == downloadStatus) {
-        if (self.playerItem) {
-            [self.playerItem removeObserver:self forKeyPath:@"status" context:nil];
+    if (AGDownloadStatusSuccess == downloadStatus) {// 只能一次
+        NSLog(@"download playerItem  success %@ %@ %@",NSStringFromSelector(_cmd),self,self.resourceUrl.absoluteString);
+        if (!self.player) {//
+            self.playerItem = [AVPlayerItem playerItemWithURL:localUrl];
+            [self.playerItem addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionInitial|NSKeyValueObservingOptionNew context:nil];
+            self.player = [[AVPlayer alloc] initWithPlayerItem:self.playerItem];
+            [self addProgressObserver];
+            [self addNotifyWithObject:self.playerItem];
+            self.playerLayer = [AVPlayerLayer playerLayerWithPlayer:self.player];
+            self.playerLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (self.layerView) {
+                    self.playerLayer.frame = self.layerView.layer.frame;
+                    [self.layerView.layer addSublayer:self.playerLayer];
+                }
+            });
         }
-        self.playerItem = [AVPlayerItem playerItemWithURL:localUrl];
-        [self.playerItem addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionInitial|NSKeyValueObservingOptionNew context:nil];
-        self.player = [[AVPlayer alloc] initWithPlayerItem:self.playerItem];
-        self.playerLayer = [AVPlayerLayer playerLayerWithPlayer:self.player];
-        [self addProgressObserver];
-        self.playerLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (self.layerView) {
-                [self.layerView.layer removeAllAnimations];
-                self.playerLayer.frame = self.layerView.layer.frame;
-                [self.layerView.layer addSublayer:self.playerLayer];
-            }
-        });
     }else if(AGDownloadStatusDownloading == downloadStatus || AGDownloadStatusUnkown == downloadStatus){//
         self.playerStatus = AGPlayerStatusLoading;
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -135,10 +140,9 @@
 {
     if (object == self.playerItem) {
         if ([keyPath isEqualToString:@"status"]) {
-            NSLog(@"playerItem状态：：%ld", _playerItem.status);
+            NSLog(@"playerItem状态：：%ld %@", _playerItem.status,self.resourceUrl.absoluteString);
             if (AVPlayerItemStatusReadyToPlay == self.playerItem.status) {
                 _isReadyToplay = YES;
-                NSLog(@"player --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (self.onReadyBlock) {
                         self.onReadyBlock(self);
@@ -156,10 +160,9 @@
         }
     }
 }
-- (void)playerItemDidReachEnd
+- (void)playerItemDidReachEnd:(NSNotification *)notify
 {// 播放结束
-    NSLog(@"player --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
-    if (self.playerItem) {
+    if (notify.object && notify.object == self.playerItem) {
         __weak typeof(self) weakSelf = self;
         [self.playerItem seekToTime:kCMTimeZero completionHandler:^(BOOL finished) {
             __weak typeof(weakSelf) strongSelf = weakSelf;
@@ -171,9 +174,6 @@
 }
 -(void)addProgressObserver
 {// 播放监听
-    if (_timeObserver) {
-        return;
-    }
     __weak typeof(self) weakSelf = self;
     _timeObserver = [_player addPeriodicTimeObserverForInterval:CMTimeMake(1, 1) queue:dispatch_get_main_queue() usingBlock:^(CMTime time) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -187,24 +187,24 @@
         }
     }];
 }
-- (void)addNotify
+- (void)addNotifyWithObject:(AVPlayerItem *)playerItem
 {// 通知
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(playerItemDidReachEnd)
+                                             selector:@selector(playerItemDidReachEnd:)
                                                  name:AVPlayerItemDidPlayToEndTimeNotification
-                                               object:nil];
+                                               object:playerItem];
 }
 #pragma mark -dealloc
 - (void)dealloc
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:AVPlayerItemDidPlayToEndTimeNotification object:nil];
+    NSLog(@"dealloc--- %@ %@",NSStringFromSelector(_cmd),self);
     if (self.playerItem) {
         [self.playerItem removeObserver:self forKeyPath:@"status" context:nil];
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:AVPlayerItemDidPlayToEndTimeNotification object:self.playerItem];
     }
     if (_timeObserver) {
         [self.player removeTimeObserver:_timeObserver];
     }
-    NSLog(@"dealloc--- %@ %@",NSStringFromSelector(_cmd),self);
 }
 
 @end

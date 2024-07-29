@@ -30,48 +30,43 @@
 #pragma mark -public
 - (void)playerPlayWithPlayer:(AGPlayer *)player
 {
-    NSLog(@"player --- %@ %@",NSStringFromSelector(_cmd),player.resourceUrl.absoluteString);
+    NSLog(@"playermanager --- %@ %@",NSStringFromSelector(_cmd),player.resourceUrl.absoluteString);
     dispatch_async(_serialQueue, ^{
         if (self->_currentPlayPlayer && self->_currentPlayPlayer != player) {
-            NSLog(@"player --- %@ %@ ---- ",NSStringFromSelector(_cmd),self->_currentPlayPlayer.resourceUrl.absoluteString);
             [self->_currentPlayPlayer endPlay];
         }
         self->_currentPlayPlayer = player;
-        NSLog(@"player --- %@ %@ ----",NSStringFromSelector(_cmd),player.resourceUrl.absoluteString);
         [self->_currentPlayPlayer play];
     });
 }
 - (void)playerPause
 {
-    NSLog(@"player --- %@ %@",NSStringFromSelector(_cmd),_currentPlayPlayer.resourceUrl.absoluteString);
+    NSLog(@"playermanager --- %@ %@",NSStringFromSelector(_cmd),_currentPlayPlayer.resourceUrl.absoluteString);
     dispatch_async(_serialQueue, ^{
         if (self->_currentPlayPlayer) {
-            NSLog(@"player --- %@ %@----",NSStringFromSelector(_cmd),self->_currentPlayPlayer.resourceUrl.absoluteString);
             [self->_currentPlayPlayer pause];
         }
     });
 }
 - (void)playerEndplay
 {
-    NSLog(@"player --- %@ %@",NSStringFromSelector(_cmd),_currentPlayPlayer.resourceUrl.absoluteString);
+    NSLog(@"playermanager --- %@ %@",NSStringFromSelector(_cmd),_currentPlayPlayer.resourceUrl.absoluteString);
     dispatch_async(_serialQueue, ^{
         if (self->_currentPlayPlayer) {
-            NSLog(@"player --- %@ %@---",NSStringFromSelector(_cmd),self->_currentPlayPlayer.resourceUrl.absoluteString);
             [self->_currentPlayPlayer endPlay];
         }
     });
 }
 - (void)playerReadyToPlay:(AGPlayer *)player{
     dispatch_async(_serialQueue, ^{
-        if (nil == self->_currentPlayPlayer) {
-            self->_currentPlayPlayer = player;
-        }
         if (self->_currentPlayPlayer && self->_currentPlayPlayer == player) {
-            [self->_currentPlayPlayer play];
+            if ([player playFlag]) {
+                [self->_currentPlayPlayer play];
+            }
         }
     });
 }
-- (AGPlayer *)playerWithResourceUrl:(NSURL *)resourceUrl errorBlock:(void (^)(NSError *))errorBlock{
+- (AGPlayer *)playerWithResourceUrl:(NSURL *)resourceUrl{
     if (!(resourceUrl && resourceUrl.scheme)) {// 无效
         return nil;
     }
@@ -92,12 +87,12 @@
     __weak typeof(self) weakSelf = self;
     player.onPlayEndResetBlock = ^(AGPlayer *player) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        NSLog(@"player playermanager onPlayEndResetBlock --- %@ %@",NSStringFromSelector(_cmd),self->_currentPlayPlayer.resourceUrl.absoluteString);
+        NSLog(@"playermanager onPlayEndResetBlock --- %@ %@",NSStringFromSelector(_cmd),self->_currentPlayPlayer.resourceUrl.absoluteString);
         [strongSelf playerReadyToPlay:player];
     };
     player.onReadyBlock = ^(AGPlayer *player) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        NSLog(@"player playermanager onReadyBlock --- %@ %@",NSStringFromSelector(_cmd),self->_currentPlayPlayer.resourceUrl.absoluteString);
+        NSLog(@"playermanager onReadyBlock --- %@ %@",NSStringFromSelector(_cmd),self->_currentPlayPlayer.resourceUrl.absoluteString);
         [strongSelf playerReadyToPlay:player];
     };
     [self.playerMuArr insertObject:player atIndex:0];

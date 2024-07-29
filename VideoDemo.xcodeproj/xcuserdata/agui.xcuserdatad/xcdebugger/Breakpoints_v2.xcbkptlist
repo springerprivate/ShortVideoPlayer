@@ -23,47 +23,47 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "62B52A75-5D11-4989-9AE9-E836929E7AE8"
+            uuid = "A944829C-7C35-4318-8267-1FF7336DDBC5"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "VideoDemo/AGPlayerManager.m"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "96"
-            endingLineNumber = "96"
-            landmarkName = "-createNewPlayerWithResourceUrl:"
+            startingLineNumber = "62"
+            endingLineNumber = "62"
+            landmarkName = "-playerReadyToPlay:"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "4717285F-CB5B-4BEA-88AE-CFD04F743F30"
+            uuid = "A8D8A8D2-B41B-4A35-96B5-6EB053D75C97"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "VideoDemo/AGPlayerManager.m"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "101"
-            endingLineNumber = "101"
-            landmarkName = "-createNewPlayerWithResourceUrl:"
+            startingLineNumber = "35"
+            endingLineNumber = "35"
+            landmarkName = "-playerPlayWithPlayer:"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "21F23AE3-006E-447E-967C-DC0CD5D9AD37"
+            uuid = "3E5DD29B-0BC7-40A6-8188-4595B3DEC682"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "VideoDemo/AGPlayer.m"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "58"
-            endingLineNumber = "58"
+            startingLineNumber = "46"
+            endingLineNumber = "46"
             landmarkName = "-play"
             landmarkType = "7">
          </BreakpointContent>
@@ -71,15 +71,15 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "05FBF283-E64B-42D1-AC3A-DE5EDD2D1291"
+            uuid = "0FD6EDF5-F371-4032-B8B7-E2A82461A98B"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "VideoDemo/AGPlayer.m"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "124"
-            endingLineNumber = "124"
+            startingLineNumber = "129"
+            endingLineNumber = "129"
             landmarkName = "-agDownloadStatus:localUrl:error:downloadBytes:totalBytes:"
             landmarkType = "7">
          </BreakpointContent>

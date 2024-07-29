@@ -9,6 +9,8 @@
 #import "AGDownload.h"
 #import "AGVideoResourceCacheManager.h"
 
+#define kDownloadingMaxNum 5
+
 @interface AGDownloadManager (){
     dispatch_queue_t _serialQueue;
 }
@@ -46,29 +48,52 @@
         }
         for (AGDownload *download in self.downloadingMuArr) {
             if ([download.resourceUrl.absoluteString isEqualToString:resourceUrl.absoluteString]) {
-                download.delegate = player;
+//                download.delegate = player;
                 return;
             }
         }
         for (NSURL *url in self.downloadQueueMuArr) {
             if ([url.absoluteString isEqualToString:resourceUrl.absoluteString]) {
-                if (player || [self.downloadingMuArr count] < 5) {
+                if ([self.downloadingMuArr count] < kDownloadingMaxNum) {
                     [self.downloadQueueMuArr removeObject:url];
                     [self createDownloadWithResourceUrl:resourceUrl player:player];
                 }
                 return;
             }
         }
-        if ([self.downloadingMuArr count] < 5) {
+        if ([self.downloadingMuArr count] < kDownloadingMaxNum) {
             [self createDownloadWithResourceUrl:resourceUrl player:player];
         }else{
             [self.downloadQueueMuArr addObject:resourceUrl];
         }
+//        if (player) {// 如果 是player传递过来
+//            while ([self.downloadingMuArr count] >= kDownloadingMaxNum) {
+//                AGDownload *download = [self.downloadingMuArr lastObject];
+//                [download cancelDownload];
+//                [self.downloadingMuArr removeObject:download];
+//            }
+//            [self createDownloadWithResourceUrl:resourceUrl player:player];
+//        }else{
+//            for (NSURL *url in self.downloadQueueMuArr) {
+//                if ([url.absoluteString isEqualToString:resourceUrl.absoluteString]) {
+//                    if ([self.downloadingMuArr count] < kDownloadingMaxNum) {
+//                        [self.downloadQueueMuArr removeObject:url];
+//                        [self createDownloadWithResourceUrl:resourceUrl player:player];
+//                    }
+//                    return;
+//                }
+//            }
+//            if ([self.downloadingMuArr count] < kDownloadingMaxNum) {
+//                [self createDownloadWithResourceUrl:resourceUrl player:player];
+//            }else{
+//                [self.downloadQueueMuArr addObject:resourceUrl];
+//            }
+//        }
     });
 }
 
 - (void)reloadDownload{
-    while ([self.downloadQueueMuArr count] && [self.downloadingMuArr count] < 5) {
+    while ([self.downloadQueueMuArr count] && [self.downloadingMuArr count] < kDownloadingMaxNum) {
         NSURL *url = [self.downloadQueueMuArr objectAtIndex:0];
         [self.downloadQueueMuArr removeObject:url];
         [self createDownloadWithResourceUrl:url player:nil];
@@ -89,7 +114,7 @@
             [strongSelf reloadDownload];
         });
     };
-    [self.downloadingMuArr addObject:downLoad];
+    [self.downloadingMuArr insertObject:downLoad atIndex:0];
     [downLoad startDownload];
 }
 

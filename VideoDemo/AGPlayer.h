@@ -37,9 +37,11 @@ typedef NS_ENUM(NSInteger,AGPlayerStatus) {
 /// 资源准备完成
 @property (nonatomic,copy)void(^onReadyBlock)(AGPlayer *player);
 
-
 ///  资源下载是否失败
 - (BOOL)resouceDownloadFailure;
+
+/// 获取播放标记  管理器是否允许播放
+- (BOOL)playFlag;
 
 #pragma mark -只能在 播放器管理类里调用
 /// 播放

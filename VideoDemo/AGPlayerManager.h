@@ -15,7 +15,7 @@
 
 /// 获取播放类
 /// - Parameter resourceUrl: 资源地址（唯一标识）
-- (AGPlayer *)playerWithResourceUrl:(NSURL *)resourceUrl errorBlock:(void(^)(NSError *))errorBlock;
+- (AGPlayer *)playerWithResourceUrl:(NSURL *)resourceUrl;
 
 /// 开始播放
 /// - Parameter player: 播放器 可为nil

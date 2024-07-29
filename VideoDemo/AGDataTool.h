@@ -13,7 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSString *)md5:(NSString *)key;
 + (BOOL)createFolder:(NSString *)path;
-
 + (BOOL)isExistFile:(NSString *)filePath;
 
 @end

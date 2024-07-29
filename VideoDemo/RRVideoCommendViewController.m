@@ -37,7 +37,17 @@
     [self.view addSubview:self.tableView];
 }
 - (void)rrRequestData{
-    [self.list addObjectsFromArray:@[@"https://newplatform-1301970825.file.myqcloud.com/videos/2021-12-02/1638434498997867.mp4",
+    [self.list addObjectsFromArray:@[@"https://newplatform-1301970825.file.myqcloud.com/videos/2022-03-11/1646986592660745.mp4",
+                                     @"https://newplatform-1301970825.file.myqcloud.com/videos/2022-09-30/1664524971396804.mp4",
+                                     @"https://tousubiaoyang-1301970825.file.myqcloud.com/shop/2023-06-29/PC7tirXkavzQL4Uh-nafw83077f89e2bc6750278f974d29285647.mp4",
+                                     @"https://tousubiaoyang-1301970825.file.myqcloud.com/shop/2023-08-02/QhkIu2op74yD6vVTqi5DD0c8ec07f54b723df3130762a8792c9d3.mp4",
+                                     @"https://tousubiaoyang-1301970825.file.myqcloud.com/shop/16939956075405350/0R-mnW19n-oK7YaHF3qoa.mp4",
+                                     @"https://tousubiaoyang-1301970825.file.myqcloud.com/shop/16949389328163566/WjwropCbxp6Qt1z6SjKjZ.mp4",
+                                     @"https://tousubiaoyang-1301970825.file.myqcloud.com/shop/16951160657838334/C0GTJXqspC-YmFBzNXQup.mp4",
+                                     @"https://newplatform-1301970825.file.myqcloud.com/weidong_test/2023-10-07/bdf9fbccc7a470c551b704b7568c10d1.mp4",
+                                     @"https://newplatform-1301970825.file.myqcloud.com/weidong_test/2023-11-11/b050b08a8ef7cc352469f9877611e4a0.mp4",
+                                     @"https://newplatform-1301970825.file.myqcloud.com/weidong_test/2023-11-25/b76b2c72e2aff74a185f561f1ca16cd8.mp4",
+                                     @"https://newplatform-1301970825.file.myqcloud.com/videos/2021-12-02/1638434498997867.mp4",
                                      @"https://newplatform-1301970825.file.myqcloud.com/videos/2021-12-29/1640776380665634.mp4",
                                      @"https://tousubiaoyang-1301970825.file.myqcloud.com/shop/1702022756212823/5ESeKXRp6Pw3_rFydDdlF.mp4",
                                      @"https://newplatform-1301970825.file.myqcloud.com/videos/2022-09-22/1663836144457216.mp4",
@@ -47,6 +57,14 @@
                                      @"https://newplatform-1301970825.file.myqcloud.com/weidong_test/2023-10-24/37236a3a8887564bb9e506e7bdf4cb5d.mp4",
                                      @"https://tousubiaoyang-1301970825.file.myqcloud.com/shop/17007099789252384/gAb5tjhSBomngvgGWWdTI.MOV"]];
     [self.tableView reloadData];
+    if ([self.list count]) {// 播放
+        dispatch_async(dispatch_get_main_queue(), ^{
+            MyCell *cell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
+            if (cell) {
+                [self didDisplayCell:cell forRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
+            }
+        });
+    }
 }
 #pragma mark tableView delegate
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -66,7 +84,7 @@
     cell.contentView.layer.borderWidth = 4;
     cell.contentView.layer.borderColor = [UIColor redColor].CGColor;
     cell.indexPath = indexPath;
-    AGPlayer *player = [[AGPlayerManager shareManager] playerWithResourceUrl:[NSURL URLWithString:str] errorBlock:nil];
+    AGPlayer *player = [[AGPlayerManager shareManager] playerWithResourceUrl:[NSURL URLWithString:str]];
     if (player) {
         cell.player = player;
         [[AGDownloadManager shareManager] downloadWithResourceUrl:[NSURL URLWithString:str] player:(id <AGDownloadDelegate>)player];
@@ -95,15 +113,12 @@
     _currentIndex = indexPath;
     NSLog(@"----------------------------------------");
     
-    // 如果文件下载失败，则重新下载
     AGPlayer *player = ((MyCell *)cell).player;
-    
-    if ([player resouceDownloadFailure]) {
+    NSLog(@"%@ %@",indexPath,player.resourceUrl.absoluteString);
+    if ([player resouceDownloadFailure]) {// 如果文件下载失败，则重新下载
         [[AGDownloadManager shareManager] downloadWithResourceUrl:player.resourceUrl player:player];
     }
-    
     [[AGPlayerManager shareManager] playerPlayWithPlayer:((MyCell *)cell).player];
-    
     for (int index = 1; index < 3; index ++) {
         if ([self.list count] > (index + indexPath.row)) {
             NSString *str = self.list[indexPath.row + index];

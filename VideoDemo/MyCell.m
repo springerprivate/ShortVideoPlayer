@@ -7,6 +7,7 @@
 
 #import "MyCell.h"
 #import "AGPlayer.h"
+#import <AVFoundation/AVFoundation.h>
 
 @interface MyCell ()
 
@@ -18,8 +19,8 @@
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier{
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
-        [self.contentView addSubview:self.statusLab];
-        [self.contentView addSubview:self.indexLab];
+        [self addSubview:self.statusLab];
+        [self addSubview:self.indexLab];
     }
     return self;
 }
@@ -29,6 +30,13 @@
 }
 
 - (void)setPlayer:(AGPlayer *)player{
+    // cell layer 清除原有显示。
+    for (CALayer *layer in [self.contentView.layer sublayers]) {
+        if ([layer isKindOfClass:[AVPlayerLayer class]]) {
+            [layer removeFromSuperlayer];
+            break;
+        }
+    }
     NSLog(@"player --- %@ %@ %@",NSStringFromSelector(_cmd),player.resourceUrl.absoluteString,[NSThread currentThread]);
     self.statusLab.text = @"";
     _player = player;
