@@ -16,8 +16,6 @@
 
 @property (nonatomic,assign)AGDownloadStatus downloadStatus;
 
-@property (nonatomic,copy)NSURL *localUrl;
-
 @end
 
 @implementation AGDownload
@@ -26,7 +24,7 @@
 {
     NSLog(@"download --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
     if (self.onDownloadBlock) {
-        self.onDownloadBlock(self.downloadStatus, self.localUrl, [self errorWithDownloadStatus:self.downloadStatus]);
+        self.onDownloadBlock(self.downloadStatus, [self errorWithDownloadStatus:self.downloadStatus]);
     }
 }
 
@@ -35,7 +33,7 @@
     // 开始下载
     self.downloadStatus = AGDownloadStatusDownloading;
     if (self.onDownloadBlock) {
-        self.onDownloadBlock(AGDownloadStatusDownloading, nil, nil);
+        self.onDownloadBlock(AGDownloadStatusDownloading, nil);
     }
     if (self.onEndDownloadBlock) {
         __weak typeof(self)weakSelf = self;
@@ -62,7 +60,7 @@
         NSLog(@"download --- store failure");
         self.downloadStatus = AGDownloadStatusStoreFailure;
         if (self.onDownloadBlock) {
-            self.onDownloadBlock(AGDownloadStatusStoreFailure, nil, [self errorWithDownloadStatus:AGDownloadStatusStoreFailure]);
+            self.onDownloadBlock(AGDownloadStatusStoreFailure, [self errorWithDownloadStatus:AGDownloadStatusStoreFailure]);
         }
         if (self.onEndDownloadBlock) {
             __weak typeof(self)weakSelf = self;
@@ -78,7 +76,7 @@
             NSLog(@"download --- store failure");
             self.downloadStatus = AGDownloadStatusStoreFailure;
             if (self.onDownloadBlock) {
-                self.onDownloadBlock(AGDownloadStatusStoreFailure, nil, [self errorWithDownloadStatus:AGDownloadStatusStoreFailure]);
+                self.onDownloadBlock(AGDownloadStatusStoreFailure, [self errorWithDownloadStatus:AGDownloadStatusStoreFailure]);
             }
             if (self.onEndDownloadBlock) {
                 __weak typeof(self)weakSelf = self;
@@ -87,9 +85,8 @@
         } else {
             NSLog(@"download --- success");
             self.downloadStatus = AGDownloadStatusSuccess;
-            self.localUrl = [NSURL fileURLWithPath:destinationPath];
             if (self.onDownloadBlock) {
-                self.onDownloadBlock(AGDownloadStatusSuccess, self.localUrl, nil);
+                self.onDownloadBlock(AGDownloadStatusSuccess, nil);
             }
             if (self.onEndDownloadBlock) {
                 __weak typeof(self)weakSelf = self;
@@ -106,7 +103,7 @@
             NSLog(@"download --- cancel");
             self.downloadStatus = AGDownloadStatusCancel;
             if (self.onDownloadBlock) {
-                self.onDownloadBlock(AGDownloadStatusCancel, nil, [self errorWithDownloadStatus:AGDownloadStatusCancel]);
+                self.onDownloadBlock(AGDownloadStatusCancel, [self errorWithDownloadStatus:AGDownloadStatusCancel]);
             }
             if (self.onEndDownloadBlock) {
                 __weak typeof(self)weakSelf = self;
@@ -116,7 +113,7 @@
             NSLog(@"download --- failure");
             self.downloadStatus = AGDownloadStatusFailure;
             if (self.onDownloadBlock) {
-                self.onDownloadBlock(AGDownloadStatusFailure, nil, [self errorWithDownloadStatus:AGDownloadStatusFailure]);
+                self.onDownloadBlock(AGDownloadStatusFailure, [self errorWithDownloadStatus:AGDownloadStatusFailure]);
             }
             if (self.onEndDownloadBlock) {
                 __weak typeof(self)weakSelf = self;

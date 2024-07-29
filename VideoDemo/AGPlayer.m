@@ -42,7 +42,7 @@
     NSLog(@"player --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
     if (_download) {
         __weak typeof(self)weakSelf = self;
-        _download.onDownloadBlock = ^(AGDownloadStatus downloadStatus, NSURL *localUrl, NSError *error) {// 下载回调
+        _download.onDownloadBlock = ^(AGDownloadStatus downloadStatus, NSError *error) {// 下载回调
             __strong typeof(weakSelf)strongSelf = weakSelf;
             switch (downloadStatus) {
                 case AGDownloadStatusSuccess:{// 下载成功
