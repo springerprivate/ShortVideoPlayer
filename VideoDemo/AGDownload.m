@@ -14,7 +14,7 @@
 @property (nonatomic,strong)NSURLSession *session;
 @property (nonatomic,strong)NSURLSessionDownloadTask *downloadTask;
 
-@property (nonatomic,assign)AGDownloadStatus downloadStatus;
+@property (nonatomic,assign)AGDownloadStatus downloadStatus;// 下载状态
 
 @end
 
@@ -82,6 +82,7 @@
                 __weak typeof(self)weakSelf = self;
                 self.onEndDownloadBlock(AGDownloadStatusStoreFailure,weakSelf,[self errorWithDownloadStatus:AGDownloadStatusStoreFailure]);
             }
+            [self.session invalidateAndCancel];
         } else {
             NSLog(@"download --- success");
             self.downloadStatus = AGDownloadStatusSuccess;
@@ -94,6 +95,7 @@
             }
         }
     }
+    [self.session invalidateAndCancel];
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error
 {
@@ -120,6 +122,7 @@
                 self.onEndDownloadBlock(AGDownloadStatusFailure,weakSelf,[self errorWithDownloadStatus:AGDownloadStatusFailure]);
             }
         }
+        [self.session invalidateAndCancel];
     }
 }
 - (NSError *)errorWithDownloadStatus:(AGDownloadStatus)downloadStatus

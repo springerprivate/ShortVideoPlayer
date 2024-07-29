@@ -46,6 +46,7 @@
             __strong typeof(weakSelf)strongSelf = weakSelf;
             switch (downloadStatus) {
                 case AGDownloadStatusSuccess:{// 下载成功
+                    strongSelf->_download = nil;
                     strongSelf.playerItem = nil;
                     [strongSelf createPlayer];
                     break;
@@ -53,6 +54,7 @@
                 case AGDownloadStatusFailure:
                 case AGDownloadStatusStoreFailure:
                 case AGDownloadStatusCancel:{//下载失败
+                    strongSelf->_download = nil;
                     strongSelf.playerItem = nil;
                     dispatch_async(dispatch_get_main_queue(), ^{
                         strongSelf.playerStatus = AGPlayerStatusFailure;

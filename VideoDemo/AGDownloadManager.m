@@ -104,15 +104,13 @@
     downLoad.onEndDownloadBlock = ^(AGDownloadStatus downloadStatus, AGDownload *download, NSError *error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         dispatch_async(strongSelf->_serialQueue, ^{
-            if (AGDownloadStatusSuccess == downloadStatus) {// 成功
+            if (AGDownloadStatusSuccess == downloadStatus ||
+                AGDownloadStatusFailure == downloadStatus ||
+                AGDownloadStatusStoreFailure == downloadStatus ||
+                AGDownloadStatusCancel == downloadStatus) {// 成功 或 失败
                 [strongSelf.downloadQueueMuArr removeObject:download];
                 if (strongSelf.currentDownload == download) {
                     strongSelf.currentDownload = nil;
-                    [strongSelf reloadDownload];
-                }
-            }else if(AGDownloadStatusFailure == downloadStatus || AGDownloadStatusStoreFailure == downloadStatus || AGDownloadStatusCancel == downloadStatus){// 失败
-                [strongSelf.downloadQueueMuArr removeObject:download];
-                if (strongSelf.currentDownload == download) {
                     [strongSelf reloadDownload];
                 }
             }
