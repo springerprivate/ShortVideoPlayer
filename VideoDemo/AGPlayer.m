@@ -39,26 +39,21 @@
 - (void)setDownload:(AGDownload *)download
 {
     _download = download;
+    NSLog(@"player --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
     if (_download) {
         __weak typeof(self)weakSelf = self;
         _download.onDownloadBlock = ^(AGDownloadStatus downloadStatus, NSURL *localUrl, NSError *error) {// 下载回调
             __strong typeof(weakSelf)strongSelf = weakSelf;
             switch (downloadStatus) {
                 case AGDownloadStatusSuccess:{// 下载成功
+                    strongSelf.playerItem = nil;
                     [strongSelf createPlayer];
                     break;
                 }
                 case AGDownloadStatusFailure:
-                case AGDownloadStatusStoreFailure:{//下载失败
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        strongSelf.playerStatus = AGPlayerStatusFailure;
-                        if (strongSelf.onPlayerStatusBlock) {
-                            strongSelf.onPlayerStatusBlock(AGPlayerStatusFailure);
-                        }
-                    });
-                    break;
-                }
-                case AGDownloadStatusCancel:{
+                case AGDownloadStatusStoreFailure:
+                case AGDownloadStatusCancel:{//下载失败
+                    strongSelf.playerItem = nil;
                     dispatch_async(dispatch_get_main_queue(), ^{
                         strongSelf.playerStatus = AGPlayerStatusFailure;
                         if (strongSelf.onPlayerStatusBlock) {
@@ -71,7 +66,7 @@
                     dispatch_async(dispatch_get_main_queue(), ^{
                         strongSelf.playerStatus = AGPlayerStatusLoading;
                         if (strongSelf.onPlayerStatusBlock) {
-                            strongSelf.onPlayerStatusBlock(AGPlayerStatusFailure);
+                            strongSelf.onPlayerStatusBlock(AGPlayerStatusLoading);
                         }
                     });
                 }
@@ -81,6 +76,9 @@
             }
         };
         [_download reportDownloadStatus];
+    }else{
+        self.playerItem = nil;
+        [self createPlayer];
     }
 }
 #pragma mark -public

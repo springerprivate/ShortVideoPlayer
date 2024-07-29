@@ -36,7 +36,7 @@ typedef NS_ENUM(NSInteger,AGDownloadStatus) {
 /// 取消下载
 - (void)cancelDownload;
 
-/// 下载状态上报
+/// 下载状态上报  主要是上报给 显示
 - (void)reportDownloadStatus;
 
 @end

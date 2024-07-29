@@ -77,17 +77,17 @@
 }
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     NSString *str = self.list[indexPath.row];
-    NSLog(@"---------------------------------------- %@ %@",NSStringFromSelector(_cmd),str);
+    NSLog(@"---------------------------------------- %@ %@ %@",NSStringFromSelector(_cmd),str,indexPath);
     //填充视频数据
     MyCell *cell = [tableView dequeueReusableCellWithIdentifier:NSStringFromClass([MyCell class]) forIndexPath:indexPath];
     cell.contentView.layer.borderWidth = 4;
     cell.contentView.layer.borderColor = [UIColor redColor].CGColor;
     cell.indexPath = indexPath;
     AGPlayer *player = [[AGPlayerManager shareManager] playerWithResourceUrl:[NSURL URLWithString:str]];
+    cell.player = player;
     [[AGDownloadManager shareManager] createDownloadWithResourceUrl:[NSURL URLWithString:str] result:^(AGDownload *download) {
         player.download = download;
     }];
-    cell.player = player;
     return cell;
 }
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {

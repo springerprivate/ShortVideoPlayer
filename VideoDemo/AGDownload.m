@@ -42,6 +42,7 @@
         self.onEndDownloadBlock(AGDownloadStatusDownloading,weakSelf,nil);
     }
     NSLog(@"download --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
+    self.downloadTask = nil;
     [self.downloadTask resume];
 }
 
@@ -67,7 +68,6 @@
             __weak typeof(self)weakSelf = self;
             self.onEndDownloadBlock(AGDownloadStatusStoreFailure,weakSelf,[self errorWithDownloadStatus:AGDownloadStatusStoreFailure]);
         }
-        [self.session invalidateAndCancel];
     }else{
         NSString *destinationPath = [path stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mp4",[AGVideoResourceCacheManager  cacheKeyWithResourceUrl:self.resourceUrl]]];
         NSURL *destinationURL = [NSURL fileURLWithPath:destinationPath];
@@ -96,7 +96,6 @@
                 self.onEndDownloadBlock(AGDownloadStatusSuccess,weakSelf,nil);
             }
         }
-        [self.session invalidateAndCancel];
     }
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error
@@ -116,16 +115,14 @@
         } else {
             NSLog(@"download --- failure");
             self.downloadStatus = AGDownloadStatusFailure;
-            if (self.onEndDownloadBlock) {
-                __weak typeof(self)weakSelf = self;
-                self.onEndDownloadBlock(AGDownloadStatusFailure,weakSelf,[self errorWithDownloadStatus:AGDownloadStatusFailure]);
+            if (self.onDownloadBlock) {
+                self.onDownloadBlock(AGDownloadStatusFailure, nil, [self errorWithDownloadStatus:AGDownloadStatusFailure]);
             }
             if (self.onEndDownloadBlock) {
                 __weak typeof(self)weakSelf = self;
                 self.onEndDownloadBlock(AGDownloadStatusFailure,weakSelf,[self errorWithDownloadStatus:AGDownloadStatusFailure]);
             }
         }
-        [self.session invalidateAndCancel];
     }
 }
 - (NSError *)errorWithDownloadStatus:(AGDownloadStatus)downloadStatus
@@ -167,7 +164,7 @@
 {
     if (nil == _session) {
         NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
-        configuration.timeoutIntervalForRequest = 15;
+        configuration.timeoutIntervalForResource = 15;
         _session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
     }
     return _session;

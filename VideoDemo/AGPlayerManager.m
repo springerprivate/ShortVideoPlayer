@@ -31,7 +31,7 @@
 #pragma mark -public
 - (void)playerPlayWithPlayer:(AGPlayer *)player
 {
-    NSLog(@"playermanager --- %@ %@",NSStringFromSelector(_cmd),_currentPlayPlayer.resourceUrl.absoluteString);
+    NSLog(@"playermanager --- %@ %@",NSStringFromSelector(_cmd),player.resourceUrl.absoluteString);
     dispatch_async(_serialQueue, ^{
         if (self.currentPlayPlayer && self.currentPlayPlayer != player) {
             [self.currentPlayPlayer endPlay];

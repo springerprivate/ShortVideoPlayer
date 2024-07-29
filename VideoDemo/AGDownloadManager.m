@@ -76,6 +76,10 @@
 - (void)predownloadWithResourceUrl:(NSURL *)resourceUrl{
     NSLog(@"downloadManager --- %@ %@",NSStringFromSelector(_cmd),resourceUrl.absoluteString);
     dispatch_async(_serialQueue, ^{
+        NSURL *localUrl = [AGVideoResourceCacheManager getLocalResoureWithCacheKey:[AGVideoResourceCacheManager cacheKeyWithResourceUrl:resourceUrl]];
+        if (localUrl) {// 如果资源已存在，则不再处理
+            return;
+        }
         for (AGDownload *download in self.downloadQueueMuArr) {
             if ([download.resourceUrl.absoluteString isEqualToString:resourceUrl.absoluteString]) {
                 return;
@@ -106,7 +110,8 @@
                     strongSelf.currentDownload = nil;
                     [strongSelf reloadDownload];
                 }
-            }else if(AGDownloadStatusFailure == downloadStatus || AGDownloadStatusStoreFailure == downloadStatus){// 失败
+            }else if(AGDownloadStatusFailure == downloadStatus || AGDownloadStatusStoreFailure == downloadStatus || AGDownloadStatusCancel == downloadStatus){// 失败
+                [strongSelf.downloadQueueMuArr removeObject:download];
                 if (strongSelf.currentDownload == download) {
                     [strongSelf reloadDownload];
                 }

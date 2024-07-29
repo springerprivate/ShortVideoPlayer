@@ -38,7 +38,7 @@
             break;
         }
     }
-    NSLog(@"player --- %@ %@ %@",NSStringFromSelector(_cmd),player.resourceUrl.absoluteString,[NSThread currentThread]);
+    NSLog(@"cell --- %@ %@ %@",NSStringFromSelector(_cmd),player.resourceUrl.absoluteString,[NSThread currentThread]);
     self.statusLab.text = @"";
     _player = player;
     _player.layerView = self.contentView;
@@ -48,6 +48,7 @@
     __weak typeof(self)weakSelf = self;
     _player.onPlayerStatusBlock = ^(AGPlayerStatus playerStatus) {// 在主线程中
         __strong typeof(weakSelf)strongSelf = weakSelf;
+        NSLog(@"cell --- %@ %@ %@ %@",NSStringFromSelector(_cmd),player.resourceUrl.absoluteString,[NSThread currentThread],@(playerStatus).stringValue);
         NSString *statusStr = @"";
         switch (playerStatus) {
             case AGPlayerStatusLoading:{
