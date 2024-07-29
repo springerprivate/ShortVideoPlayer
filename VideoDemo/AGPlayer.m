@@ -10,8 +10,8 @@
 #import "AGVideoResourceCacheManager.h"
 
 @interface AGPlayer (){
-    BOOL _isReadyToplay;// 
-    BOOL _playFlag;
+    BOOL _isReadyToplay;// 资源是否已准备好（资源下载+playeritem ready）
+    BOOL _playFlag;// 播放标记 是否为播放状态（控制层逻辑）
 }
 
 @property (nonatomic ,strong)AVPlayerItem *playerItem;//视频资源载体
@@ -27,6 +27,7 @@
 @implementation AGPlayer
 
 #pragma mark -set
+
 - (void)setOnPlayerStatusBlock:(void (^)(AGPlayerStatus))onPlayerStatusBlock
 {
     _onPlayerStatusBlock = onPlayerStatusBlock;
@@ -36,6 +37,7 @@
         }
     });
 }
+
 - (void)setDownload:(AGDownload *)download
 {
     _download = download;
@@ -84,6 +86,7 @@
     }
 }
 #pragma mark -public
+
 -(void)play
 {
     _playFlag = YES;
@@ -100,6 +103,7 @@
         });
     }
 }
+
 - (void)pause
 {
     _playFlag = NO;
@@ -116,6 +120,7 @@
         });
     }
 }
+
 - (void)endPlay
 {
     _playFlag = NO;
@@ -134,12 +139,15 @@
         });
     }
 }
-- (BOOL)playFlag{
+
+- (BOOL)playFlag
+{
     return _playFlag;
 }
 
 #pragma mark - create player
-- (void)createPlayer{
+- (void)createPlayer
+{
     if (!self.player) {//
         self.playerItem = [AVPlayerItem playerItemWithURL:[AGVideoResourceCacheManager getLocalResoureWithCacheKey:[AGVideoResourceCacheManager cacheKeyWithResourceUrl:self.resourceUrl]]];
         [self.playerItem addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionInitial|NSKeyValueObservingOptionNew context:nil];
@@ -179,6 +187,7 @@
         }
     }
 }
+
 - (void)playerItemDidReachEnd:(NSNotification *)notify
 {// 播放结束
     if (notify.object && notify.object == self.playerItem) {
@@ -214,7 +223,9 @@
                                                  name:AVPlayerItemDidPlayToEndTimeNotification
                                                object:playerItem];
 }
+
 #pragma mark -dealloc
+
 - (void)dealloc
 {
     NSLog(@"player --- dealloc--- %@ %@",NSStringFromSelector(_cmd),self);

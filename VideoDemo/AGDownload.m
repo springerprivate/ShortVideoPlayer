@@ -20,13 +20,7 @@
 
 @implementation AGDownload
 
-- (void)reportDownloadStatus
-{
-    NSLog(@"download --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
-    if (self.onDownloadBlock) {
-        self.onDownloadBlock(self.downloadStatus, [self errorWithDownloadStatus:self.downloadStatus]);
-    }
-}
+#pragma mark -public
 
 - (void)startDownload
 {
@@ -50,8 +44,16 @@
     [self.downloadTask cancel];
 }
 
+- (void)reportDownloadStatus
+{
+    NSLog(@"download --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
+    if (self.onDownloadBlock) {
+        self.onDownloadBlock(self.downloadStatus, [self errorWithDownloadStatus:self.downloadStatus]);
+    }
+}
 #pragma mark -NSURLSessionDownloadDelegate
-- (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(NSURL *)location 
+
+- (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(NSURL *)location
 {
     NSLog(@"download --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
     NSString *documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
@@ -82,7 +84,6 @@
                 __weak typeof(self)weakSelf = self;
                 self.onEndDownloadBlock(AGDownloadStatusStoreFailure,weakSelf,[self errorWithDownloadStatus:AGDownloadStatusStoreFailure]);
             }
-            [self.session invalidateAndCancel];
         } else {
             NSLog(@"download --- success");
             self.downloadStatus = AGDownloadStatusSuccess;
@@ -95,8 +96,9 @@
             }
         }
     }
-    [self.session invalidateAndCancel];
+//    [self.session invalidateAndCancel];
 }
+
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error
 {
     NSLog(@"download --- %@ %@",NSStringFromSelector(_cmd),self.resourceUrl.absoluteString);
@@ -122,28 +124,29 @@
                 self.onEndDownloadBlock(AGDownloadStatusFailure,weakSelf,[self errorWithDownloadStatus:AGDownloadStatusFailure]);
             }
         }
-        [self.session invalidateAndCancel];
+//        [self.session invalidateAndCancel];
     }
 }
+
 - (NSError *)errorWithDownloadStatus:(AGDownloadStatus)downloadStatus
 {
     switch (downloadStatus) {
         case AGDownloadStatusCancel:{
-            return [NSError errorWithDomain:@"" 
+            return [NSError errorWithDomain:@"com.ag.download"
                                        code:AGDownloadStatusCancel
                                    userInfo:@{NSLocalizedDescriptionKey:@"下载失败",
                                               NSLocalizedFailureReasonErrorKey:@"取消下载"}];
             break;
         }
         case AGDownloadStatusFailure:{
-            return [NSError errorWithDomain:@"" 
+            return [NSError errorWithDomain:@"com.ag.download"
                                        code:AGDownloadStatusFailure
                                    userInfo:@{NSLocalizedDescriptionKey:@"下载失败",
                                               NSLocalizedFailureReasonErrorKey:@"下载失败"}];
             break;
         }
         case AGDownloadStatusStoreFailure:{
-            return [NSError errorWithDomain:@"" 
+            return [NSError errorWithDomain:@"com.ag.download" 
                                        code:AGDownloadStatusStoreFailure
                                    userInfo:@{NSLocalizedDescriptionKey:@"下载失败",
                                               NSLocalizedFailureReasonErrorKey:@"文件存储错误"}];

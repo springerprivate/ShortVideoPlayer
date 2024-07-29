@@ -77,17 +77,17 @@
 }
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     NSString *str = self.list[indexPath.row];
-    NSLog(@"---------------------------------------- %@ %@ %@",NSStringFromSelector(_cmd),str,indexPath);
+    NSLog(@"---------------------------------------- %@ %@ %@",str,indexPath,NSStringFromSelector(_cmd));
     //填充视频数据
     MyCell *cell = [tableView dequeueReusableCellWithIdentifier:NSStringFromClass([MyCell class]) forIndexPath:indexPath];
-    cell.contentView.layer.borderWidth = 4;
-    cell.contentView.layer.borderColor = [UIColor redColor].CGColor;
+//    cell.contentView.layer.borderWidth = 4;
+//    cell.contentView.layer.borderColor = [UIColor redColor].CGColor;
     cell.indexPath = indexPath;
     AGPlayer *player = [[AGPlayerManager shareManager] playerWithResourceUrl:[NSURL URLWithString:str]];
-    cell.player = player;
     [[AGDownloadManager shareManager] createDownloadWithResourceUrl:[NSURL URLWithString:str] result:^(AGDownload *download) {
         player.download = download;
     }];
+    cell.player = player;
     return cell;
 }
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
@@ -97,6 +97,7 @@
     [self handleCellDisplay];
 }
 - (void)handleCellDisplay {
+    NSLog(@"---------------------------------------- handleCellDisplay    %@",[self.tableView visibleCells]);
     NSArray<NSIndexPath *> *visibleIndexPaths = [self.tableView indexPathsForVisibleRows];
     for (NSIndexPath *indexPath in visibleIndexPaths) {
         UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
@@ -130,6 +131,11 @@
     if (nil == _tableView) {
         _tableView = [[UITableView alloc] initWithFrame:[UIScreen mainScreen].bounds];
         _tableView.backgroundColor = [UIColor yellowColor];
+        _tableView.estimatedRowHeight = 0;
+
+         _tableView.estimatedSectionHeaderHeight = 0;
+
+          _tableView.estimatedSectionFooterHeight = 0;
         _tableView.delegate = self;
         _tableView.dataSource = self;
         _tableView.showsVerticalScrollIndicator = NO;

@@ -13,15 +13,15 @@
     dispatch_queue_t _serialQueue;
 }
 
-@property (nonatomic,strong)NSMutableArray <AGDownload *>*downloadQueueMuArr;// 待下载队列
-
+@property (nonatomic,strong)NSMutableArray <AGDownload *>*downloadQueueMuArr;// 下载队列
 @property (nonatomic,strong)AGDownload *currentDownload;// 当前下载
 
 @end
 
 @implementation AGDownloadManager
 
-+ (instancetype)shareManager {
++ (instancetype)shareManager 
+{
     static AGDownloadManager *downloadManager = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -30,16 +30,22 @@
     });
     return downloadManager;
 }
+
 #pragma mark -set
-- (void)setCurrentDownload:(AGDownload *)currentDownload{
+
+- (void)setCurrentDownload:(AGDownload *)currentDownload
+{
     _currentDownload = currentDownload;
     [_currentDownload startDownload];
 }
+
 #pragma mark -public
-- (void)createDownloadWithResourceUrl:(NSURL *)resourceUrl result:(void (^)(AGDownload *))onResultBlock{
+
+- (void)createDownloadWithResourceUrl:(NSURL *)resourceUrl result:(void (^)(AGDownload *))onResultBlock
+{
     NSLog(@"downloadManager --- %@ %@",NSStringFromSelector(_cmd),resourceUrl.absoluteString);
     dispatch_async(dispatch_queue_create("com.renrui.videoDwonloadManager.serialQueue", DISPATCH_QUEUE_SERIAL), ^{
-        // 如果资源已存在，则不再处理
+        // 如果资源已存在，则不再进行下载
         NSURL *localUrl = [AGVideoResourceCacheManager getLocalResoureWithCacheKey:[AGVideoResourceCacheManager cacheKeyWithResourceUrl:resourceUrl]];
         if (localUrl) {// 如果与播放器绑定，回调给播放器
             if (onResultBlock) {
@@ -47,33 +53,38 @@
             }
             return;
         }
+        // 当前下载项
         if (self.currentDownload) {
             if ([self.currentDownload.resourceUrl.absoluteString isEqualToString:resourceUrl.absoluteString]) {
                 if (onResultBlock) {
                     onResultBlock(self.currentDownload);
                 }
                 return;
-            }else{
+            }else{// 其他资源正在下载，则取消下载
                 [self.currentDownload cancelDownload];
             }
         }
+        // 在下载队列中 取出，下载
         for (AGDownload *download in self.downloadQueueMuArr) {
             if ([download.resourceUrl.absoluteString isEqualToString:resourceUrl.absoluteString]) {
+                self.currentDownload = download;
                 if (onResultBlock) {
                     onResultBlock(download);
                 }
-                self.currentDownload = download;
                 return;
             }
         }
+        // 创建下载
         AGDownload *download =  [self createDownloadWithResourceUrl:resourceUrl];
-        self.currentDownload = download;
         if (onResultBlock) {
             onResultBlock(download);
         }
+        self.currentDownload = download;
     });
 }
-- (void)predownloadWithResourceUrl:(NSURL *)resourceUrl{
+
+- (void)predownloadWithResourceUrl:(NSURL *)resourceUrl
+{
     NSLog(@"downloadManager --- %@ %@",NSStringFromSelector(_cmd),resourceUrl.absoluteString);
     dispatch_async(_serialQueue, ^{
         NSURL *localUrl = [AGVideoResourceCacheManager getLocalResoureWithCacheKey:[AGVideoResourceCacheManager cacheKeyWithResourceUrl:resourceUrl]];
@@ -91,11 +102,16 @@
         }
     });
 }
-- (void)reloadDownload{
+
+#pragma mark - operation
+
+- (void)reloadDownload
+{
     if ([self.downloadQueueMuArr count]) {
         self.currentDownload = self.downloadQueueMuArr[0];
     }
 }
+
 - (AGDownload *)createDownloadWithResourceUrl:(NSURL *)resourceUrl{
     NSLog(@"downloadManager --- %@ %@",NSStringFromSelector(_cmd),resourceUrl.absoluteString);
     AGDownload *downLoad = [AGDownload new];
@@ -121,10 +137,13 @@
 }
 
 #pragma mark -lazy load
-- (NSMutableArray<AGDownload *> *)downloadQueueMuArr{
+
+- (NSMutableArray<AGDownload *> *)downloadQueueMuArr
+{
     if (nil == _downloadQueueMuArr) {
         _downloadQueueMuArr = [[NSMutableArray alloc] initWithCapacity:0];
     }
     return _downloadQueueMuArr;
 }
+
 @end

@@ -13,6 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic,strong)AGPlayer *player;
 
+@property (nonatomic,strong)UIView *layerView;
+
 @property (nonatomic,strong)NSIndexPath *indexPath;
 
 @end

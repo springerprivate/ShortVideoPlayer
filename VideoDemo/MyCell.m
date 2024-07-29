@@ -20,8 +20,10 @@
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier{
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
-        [self addSubview:self.statusLab];
-        [self addSubview:self.indexLab];
+        self.contentView.backgroundColor = [UIColor blueColor];
+        [self.contentView addSubview:self.layerView];
+        [self.contentView addSubview:self.statusLab];
+        [self.contentView addSubview:self.indexLab];
     }
     return self;
 }
@@ -32,7 +34,7 @@
 
 - (void)setPlayer:(AGPlayer *)player{
     // cell layer 清除原有显示。
-    for (CALayer *layer in [self.contentView.layer sublayers]) {
+    for (CALayer *layer in [self.layerView.layer sublayers]) {
         if ([layer isKindOfClass:[AVPlayerLayer class]]) {
             [layer removeFromSuperlayer];
             break;
@@ -41,7 +43,7 @@
     NSLog(@"cell --- %@ %@ %@",NSStringFromSelector(_cmd),player.resourceUrl.absoluteString,[NSThread currentThread]);
     self.statusLab.text = @"";
     _player = player;
-    _player.layerView = self.contentView;
+    _player.layerView = self.layerView;
     _player.onPlayProgressBlock = ^(float current, float total) {
 //        NSLog(@"cell progress current == %f total == %f",current,total);
     };
@@ -104,6 +106,13 @@
         _indexLab.backgroundColor = [UIColor cyanColor];
     }
     return _indexLab;
+}
+- (UIView *)layerView{
+    if (nil == _layerView) {
+        _layerView = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        _layerView.backgroundColor = [UIColor redColor];
+    }
+    return _layerView;
 }
 
 @end
