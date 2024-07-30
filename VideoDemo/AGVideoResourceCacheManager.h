@@ -18,7 +18,7 @@
 /// - Parameter resourceUrl: 资源地址
 + (NSString *)cacheKeyWithResourceUrl:(NSURL *)resourceUrl;
 
-
++ (void)clearDisk;
 
 @end
 

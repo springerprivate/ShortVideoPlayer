@@ -26,6 +26,7 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         downloadManager = [[self alloc] init];
+        [AGVideoResourceCacheManager clearDisk];
         downloadManager->_serialQueue = dispatch_queue_create("com.renrui.videoDwonloadManager.serialQueue", DISPATCH_QUEUE_SERIAL);
     });
     return downloadManager;
