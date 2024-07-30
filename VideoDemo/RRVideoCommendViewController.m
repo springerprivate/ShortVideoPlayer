@@ -108,6 +108,13 @@
     if ((_currentIndex && _currentIndex == indexPath)) {
         return;
     }
+    BOOL downDirection = YES;
+    if (_currentIndex) {
+        if (indexPath.row < _currentIndex.row) {// 向上
+            downDirection = NO;
+        }
+    }
+    
     _currentIndex = indexPath;
     AGPlayer *player = ((MyCell *)cell).player;
     NSLog(@"----------------------------------------didDisplayCell %@ %@ ",indexPath,player.resourceUrl.absoluteString);
@@ -116,10 +123,18 @@
         player.download = download;
         [[AGPlayerManager shareManager] playerPlayWithPlayer:((MyCell *)cell).player];
         
+        NSInteger preIndex = 0;
         for (int index = 1; index < 6; index ++) {
-            if ([self.list count] > (index + indexPath.row)) {
-                NSString *str = self.list[indexPath.row + index];
+            if (downDirection) {
+                preIndex = indexPath.row + index;
+            }else{
+                preIndex = indexPath.row - index;
+            }
+            if (([self.list count] > preIndex) && (preIndex >= 0)) {
+                NSString *str = self.list[preIndex];
                 [[AGDownloadManager shareManager] predownloadWithResourceUrl:[NSURL URLWithString:str]];
+            }else{
+                break;
             }
         }
     }];
