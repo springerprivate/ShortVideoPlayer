@@ -44,7 +44,7 @@
 - (void)createDownloadWithResourceUrl:(NSURL *)resourceUrl result:(void (^)(AGDownload *))onResultBlock
 {
     NSLog(@"downloadManager --- %@ %@",NSStringFromSelector(_cmd),resourceUrl.absoluteString);
-    dispatch_async(dispatch_queue_create("com.renrui.videoDwonloadManager.serialQueue", DISPATCH_QUEUE_SERIAL), ^{
+    dispatch_async(_serialQueue, ^{
         // 如果资源已存在，则不再进行下载
         NSURL *localUrl = [AGVideoResourceCacheManager getLocalResoureWithCacheKey:[AGVideoResourceCacheManager cacheKeyWithResourceUrl:resourceUrl]];
         if (localUrl) {// 如果与播放器绑定，回调给播放器
