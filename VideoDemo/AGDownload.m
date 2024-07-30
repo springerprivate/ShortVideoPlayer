@@ -96,7 +96,7 @@
             }
         }
     }
-//    [self.session invalidateAndCancel];
+    [self.session invalidateAndCancel];
 }
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error
@@ -124,7 +124,7 @@
                 self.onEndDownloadBlock(AGDownloadStatusFailure,weakSelf,[self errorWithDownloadStatus:AGDownloadStatusFailure]);
             }
         }
-//        [self.session invalidateAndCancel];
+        [self.session invalidateAndCancel];
     }
 }
 
