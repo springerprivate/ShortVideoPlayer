@@ -80,6 +80,7 @@
 		944824542C461E6F001561CD /* VideoDemo */ = {
 			isa = PBXGroup;
 			children = (
+				9465B8282C5B14CF00156704 /* player */,
 				944824552C461E6F001561CD /* AppDelegate.h */,
 				944824562C461E6F001561CD /* AppDelegate.m */,
 				944824582C461E6F001561CD /* SceneDelegate.h */,
@@ -88,6 +89,17 @@
 				94709ABE2C47646700C264DB /* RRVideoCommendViewController.m */,
 				94709AC12C47682D00C264DB /* MyCell.h */,
 				94709AC22C47682D00C264DB /* MyCell.m */,
+				944824612C461E70001561CD /* Assets.xcassets */,
+				944824632C461E70001561CD /* LaunchScreen.storyboard */,
+				944824662C461E70001561CD /* Info.plist */,
+				944824672C461E70001561CD /* main.m */,
+			);
+			path = VideoDemo;
+			sourceTree = "<group>";
+		};
+		9465B8282C5B14CF00156704 /* player */ = {
+			isa = PBXGroup;
+			children = (
 				944824732C4658D0001561CD /* AGPlayerManager.h */,
 				944824742C4658D0001561CD /* AGPlayerManager.m */,
 				944824762C4658E5001561CD /* AGPlayer.h */,
@@ -100,12 +112,8 @@
 				944824812C46769E001561CD /* AGVideoResourceCacheManager.m */,
 				944824832C4690D3001561CD /* AGDataTool.h */,
 				944824842C4690D3001561CD /* AGDataTool.m */,
-				944824612C461E70001561CD /* Assets.xcassets */,
-				944824632C461E70001561CD /* LaunchScreen.storyboard */,
-				944824662C461E70001561CD /* Info.plist */,
-				944824672C461E70001561CD /* main.m */,
 			);
-			path = VideoDemo;
+			path = player;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

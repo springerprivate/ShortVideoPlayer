@@ -12,7 +12,7 @@
 
 #import "MyCell.h"
 
-@interface RRVideoCommendViewController ()<UITableViewDelegate, UITableViewDataSource,UIScrollViewDelegate>
+@interface RRVideoCommendViewController ()<UITableViewDelegate, UITableViewDataSource>
 
 @property (nonatomic, strong) NSMutableArray<NSString *> *list;
 
